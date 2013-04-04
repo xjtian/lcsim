@@ -1,9 +1,7 @@
-from multiprocessing import Value
-
 __author__ = 'jacky'
 
 import unittest
-from circuits.components import ComponentBase
+from components.base import ComponentBase
 
 
 class TestComponentBase(unittest.TestCase):
