@@ -56,8 +56,8 @@ class ComponentBase(object):
 
         for k, v in mapping.items():
             # Create the mapping and mark parent output bit as occupied.
-            self._input_bits[k] = (component, v)
-            component._output_bits[v][1] = True
+            self._input_bits[v] = (component, k)
+            component._output_bits[k][1] = True
 
         if component not in self.parents:
             self.parents.append(component)
@@ -65,12 +65,24 @@ class ComponentBase(object):
         if self not in component.children:
             component.children.append(self)
 
+    def evaluate_inputs(self):
+        """
+        Evaluates all input connections to this component and returns an array of input bit values in order. This will
+        alter the state of connected parent components.
+        """
+        result = [0] * len(self._input_bits)
+        for j, component, i in self._input_bits:
+            if component._output_bits[i][0] == -1:
+                component.evaluate()
+
+            result[j] = component._output_bits[i][0]
+
+        return result
+
     def evaluate(self):
         """
-        Evaluates the result of this component by recursively getting input values. Result is stored in output_bits and
-        returned.
-
-        @return: output_bits after evaluation
+        Evaluate the output result of this component, which is stored in _output_bits. Should be implemented by client
+        component classes.
         """
         pass
 

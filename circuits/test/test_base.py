@@ -1,3 +1,5 @@
+from multiprocessing import Value
+
 __author__ = 'jacky'
 
 import unittest
@@ -42,14 +44,68 @@ class TestComponentBase(unittest.TestCase):
         self.assertEqual(1, len(in_com.parents))
         self.assertEqual(1, len(out_com.children))
 
-    def test_add_input_multiple(self):
+    def test_add_input_multibit(self):
         """
-        Test add_input with multi-bit input and output components.
+        Test add_input with two multi-bit input and output components.
         """
         in_com = ComponentBase('', 5, 0)
         out_com = ComponentBase('', 0, 5)
+        mapping = {0: 4, 1: 2, 2: 3, 3: 0, 4: 1}
 
-        # TODO: incomplete
+        in_com.add_input(out_com, mapping)
+        self.add_input_helper(in_com, out_com, mapping)
+
+    def test_add_input_multicom(self):
+        """
+        Test add_input with multiple devices wired to one.
+        """
+        in_com = ComponentBase('', 5, 0)
+        out_com1 = ComponentBase('', 0, 2)
+        out_com2 = ComponentBase('', 0, 3)
+
+        mapping1 = {0: 4, 1: 2}
+        mapping2 = {0: 3, 1: 0, 2: 1}
+
+        in_com.add_input(out_com1, mapping1)
+        in_com.add_input(out_com2, mapping2)
+
+        self.add_input_helper(in_com, out_com1, mapping1)
+        self.add_input_helper(in_com, out_com2, mapping2)
+
+    def test_add_input_failures(self):
+        """
+        Test add_input catches invalid operations properly.
+        """
+        in_com = ComponentBase('', 5, 0)
+        out_com1 = ComponentBase('', 0, 2)
+        out_com2 = ComponentBase('', 0, 3)
+
+        # Output bit out of range
+        self.assertRaises(ValueError, in_com.add_input, out_com1, {3: 0})
+        self.assertRaises(ValueError, in_com.add_input, out_com1, {-1: 0})
+        # Input bit out of range
+        self.assertRaises(ValueError, in_com.add_input, out_com2, {2: 5})
+        self.assertRaises(ValueError, in_com.add_input, out_com2, {2: -1})
+
+        # Wiring to occupied input bit
+        in_com.add_input(out_com1, {0: 1})
+        self.assertRaises(ValueError, in_com.add_input, out_com2, {0: 1})
+
+        # Wiring from occupied output bit
+        self.assertRaises(ValueError, in_com.add_input, out_com1, {0: 2})
+
+    def add_input_helper(self, in_com, out_com, mapping):
+        """
+        Helper method for add_input tests.
+        """
+        for k, v in mapping.items():
+            self.assertEqual(k, in_com._input_bits[v][1])
+            self.assertIs(out_com, in_com._input_bits[v][0])
+
+            self.assert_(out_com._output_bits[k][1])
+
+        self.assertIn(out_com, in_com.parents)
+        self.assertIn(in_com, out_com.children)
 
     def test_remove_input(self):
         self.fail('Not implemented yet.')
