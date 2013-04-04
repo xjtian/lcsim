@@ -17,9 +17,9 @@ class ComponentBase(object):
         # the tuple represents the output bit number that is wired to this input bit from the Component.
         self._input_bits = [None] * input_bits
 
-        # Each index represents an output bit, and should contain a tuple (int, bool). The first element in the tuple
-        # is the output bit (0 or 1) and the boolean value represents if the bit is already wired.
-        self._output_bits = [(-1, False)] * output_bits
+        # Each index represents an output bit, and should contain a 2-element list [int, bool]. The first element in
+        # the list is the output bit (0, 1, or -1) and the boolean value represents if the bit is already wired.
+        self._output_bits = [[-1, False]] * output_bits
 
         # Graph edges for representing circuits as graphs
         self.parents = []
@@ -27,7 +27,8 @@ class ComponentBase(object):
 
     def add_input(self, component, mapping):
         """
-        Connect another component to this component by connecting output bits to input bits.
+        Connect another component to this component by connecting output bits to input bits. Connections are one-to-one,
+        so ValueError will be raised if occupied bits are attempted to be reconnected.
 
         @param component: Input component
         @type component: ComponentBase
@@ -54,7 +55,9 @@ class ComponentBase(object):
                 raise ValueError('Connections must be one-to-one. Output bit already occupied.')
 
         for k, v in mapping.items():
+            # Create the mapping and mark parent output bit as occupied.
             self._input_bits[k] = (component, v)
+            component._output_bits[v][1] = True
 
         if component not in self.parents:
             self.parents.append(component)
@@ -71,17 +74,44 @@ class ComponentBase(object):
         """
         pass
 
-    def remove_input(self, component):
+    def disconnect_inputs(self):
         """
-        Remove a specific input component from the inputs for this component.
+        Free all input bits for this component. Calling this method will alter the state of the connected parent
+        components.
+        """
+        for component, j in self._input_bits:
+            # Free up the parent output bit
+            component._output_bits[j][1] = False
+
+        unique_components = set([input_tuple[0] for input_tuple in self._input_bits])
+        for component in unique_components:
+            component.children.remove(self)
+            self.parents.remove(component)
+
+        self._input_bits = [None] * len(self._input_bits)
+
+    def disconnect_outputs(self):
+        """
+        Free all output bits for this component. Calling this method will alter the state of the connected child
+        components.
+        """
+        for component in self.children:
+            component._remove_input(self)
+
+        self.children = []
+
+    def _remove_input(self, component):
+        """
+        Remove a specific input component from the inputs for this component. Exists as a helper method for
+        disconnect_outputs and should not normally be called by client implementations.
 
         @param component: Input component to remove.
         @type component: ComponentBase
         """
-        pass
+        if component not in self.parents:
+            return
 
-    def disconnect(self):
-        """
-        Disconnect this component from its connections.
-        """
-        pass
+        self.parents.remove(component)
+        for i, (c, _) in enumerate(self._input_bits):
+            if c == component:
+                self._input_bits[i] = None
