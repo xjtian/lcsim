@@ -71,7 +71,8 @@ class ComponentBase(object):
         alter the state of connected parent components.
         """
         result = [0] * len(self._input_bits)
-        for j, component, i in self._input_bits:
+        for j, tup in enumerate(self._input_bits):
+            component, i = tup
             if component._output_bits[i][0] == -1:
                 component.evaluate()
 

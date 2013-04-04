@@ -107,6 +107,22 @@ class TestComponentBase(unittest.TestCase):
         self.assertIn(out_com, in_com.parents)
         self.assertIn(in_com, out_com.children)
 
+    def test_evaluate_inputs(self):
+        """
+        Test evaluate_inputs method.
+        """
+        in_com = ComponentBase('', 2, 0)
+        out_com1 = ComponentBase('', 0, 1)
+        out_com2 = ComponentBase('', 0, 1)
+
+        in_com._input_bits[0] = (out_com1, 0)
+        in_com._input_bits[1] = (out_com2, 0)
+
+        out_com1._output_bits[0][1] = True
+        out_com2._output_bits[0][1] = True
+
+        self.assertEqual([-1, -1], in_com.evaluate_inputs())
+
     def test_remove_input(self):
         self.fail('Not implemented yet.')
 
