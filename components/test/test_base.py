@@ -113,11 +113,9 @@ class TestComponentBase(unittest.TestCase):
         out_com1 = ComponentBase('', 0, 1)
         out_com2 = ComponentBase('', 0, 1)
 
-        in_com._input_bits[0] = (out_com1, 0)
-        in_com._input_bits[1] = (out_com2, 0)
+        self.add_input_alias(in_com, out_com1, {0: 0})
+        self.add_input_alias(in_com, out_com2, {0: 1})
 
-        out_com1._output_bits[0][1] = True
-        out_com2._output_bits[0][1] = True
         out_com2._output_bits[0][0] = 1
 
         self.assertEqual([-1, 1], in_com.evaluate_inputs())
@@ -129,10 +127,7 @@ class TestComponentBase(unittest.TestCase):
         in_com = ComponentBase('', 1, 0)
         out_com = ComponentBase('', 0, 1)
 
-        in_com._input_bits[0] = (out_com, 0)
-        in_com.parents.append(out_com)
-        out_com._output_bits[0][1] = True
-        out_com.children.append(in_com)
+        self.add_input_alias(in_com, out_com, {0: 0})
 
         in_com._remove_input(out_com)
         self.assertNotIn(in_com, out_com.children)
@@ -142,7 +137,37 @@ class TestComponentBase(unittest.TestCase):
         self.assert_(not out_com._output_bits[0][1])
 
     def test_disconnect_inputs(self):
-        self.fail('Not implemented yet.')
+        """
+        Test the disconnect_inputs method.
+        """
+        in_com = ComponentBase('', 2, 0)
+        out_com1 = ComponentBase('', 0, 1)
+        out_com2 = ComponentBase('', 0, 1)
+
+        self.add_input_alias(in_com, out_com1, {0: 0})
+        self.add_input_alias(in_com, out_com2, {0: 1})
+
+        in_com.disconnect_inputs()
+        self.assertEquals([None, None], in_com._input_bits)
+        self.assertNotIn(in_com, out_com1.children)
+        self.assertNotIn(in_com, out_com2.children)
+
+        self.assertNotIn(out_com1, in_com.parents)
+        self.assertNotIn(out_com2, in_com.parents)
+
+        self.assert_(not out_com1._output_bits[0][1])
+        self.assert_(not out_com2._output_bits[0][1])
 
     def test_disconnect_outputs(self):
         self.fail('Not implemented yet.')
+
+    def add_input_alias(self, in_com, out_com, mapping):
+        """
+        Alters state of components like add_input should without depending on the method itself.
+        """
+        for k, v in mapping.items():
+            in_com._input_bits[v] = (out_com, k)
+            out_com._output_bits[k][1] = True
+
+        in_com.parents.append(out_com)
+        out_com.children.append(in_com)
