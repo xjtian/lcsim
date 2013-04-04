@@ -118,11 +118,28 @@ class TestComponentBase(unittest.TestCase):
 
         out_com1._output_bits[0][1] = True
         out_com2._output_bits[0][1] = True
+        out_com2._output_bits[0][0] = 1
 
-        self.assertEqual([-1, -1], in_com.evaluate_inputs())
+        self.assertEqual([-1, 1], in_com.evaluate_inputs())
 
     def test_remove_input(self):
-        self.fail('Not implemented yet.')
+        """
+        Test the _remove_input helper method.
+        """
+        in_com = ComponentBase('', 1, 0)
+        out_com = ComponentBase('', 0, 1)
+
+        in_com._input_bits[0] = (out_com, 0)
+        in_com.parents.append(out_com)
+        out_com._output_bits[0][1] = True
+        out_com.children.append(in_com)
+
+        in_com._remove_input(out_com)
+        self.assertNotIn(in_com, out_com.children)
+        self.assertNotIn(out_com, in_com.parents)
+
+        self.assertIsNone(in_com._input_bits[0])
+        self.assert_(not out_com._output_bits[0][1])
 
     def test_disconnect_inputs(self):
         self.fail('Not implemented yet.')

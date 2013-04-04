@@ -125,6 +125,10 @@ class ComponentBase(object):
             return
 
         self.parents.remove(component)
-        for i, (c, _) in enumerate(self._input_bits):
+        component.children.remove(self)
+        for i, tup in enumerate(self._input_bits):
+            c, j = tup
             if c == component:
+                # 'Disconnect' output and input bit
+                component._output_bits[j][1] = False
                 self._input_bits[i] = None
