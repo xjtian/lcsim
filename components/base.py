@@ -125,7 +125,6 @@ class ComponentBase(object):
             return
 
         self.parents.remove(component)
-        component.children.remove(self)
         for i, tup in enumerate(self._input_bits):
             c, j = tup
             if c == component:
