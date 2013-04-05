@@ -4,6 +4,28 @@ import unittest
 from components.base import ComponentBase
 
 
+class ComponentMockZero(ComponentBase):
+    """
+    Mock implementation of ComponentBase, all bits evaluate to 0.
+    """
+    def __init__(self, name, input_bits, output_bits, *args, **kwargs):
+        super(ComponentMockZero, self).__init__(name, input_bits, output_bits, *args, **kwargs)
+
+    def evaluate(self):
+        self.output_bits = [0] * len(self.output_bits)
+
+
+class ComponentMockOne(ComponentBase):
+    """
+    Mock implementation of ComponentBase, all bits evaluate to 1.
+    """
+    def __init__(self, name, input_bits, output_bits, *args, **kwargs):
+        super(ComponentMockOne, self).__init__(name, input_bits, output_bits, *args, **kwargs)
+
+    def evaluate(self):
+        self.output_bits = [1] * len(self.output_bits)
+
+
 class TestComponentBase(unittest.TestCase):
     def test_constructor(self):
         name = 'name'
@@ -12,7 +34,7 @@ class TestComponentBase(unittest.TestCase):
         base = ComponentBase(name, inputs, outputs)
 
         self.assertEqual(name, base.name)
-        self.assertEqual(outputs, len(base._output_bits))
+        self.assertEqual(outputs, len(base.output_bits))
         self.assertEqual(inputs, len(base._input_bits))
 
     def test_add_input_single(self):
@@ -26,7 +48,7 @@ class TestComponentBase(unittest.TestCase):
         self.assertEqual(0, in_com._input_bits[0][1])
         self.assertIs(out_com, in_com._input_bits[0][0])
 
-        self.assert_(out_com._output_bits[0][1])
+        self.assertIn(0, out_com.occupied_outputs)
 
     def test_add_input_graph(self):
         """
@@ -100,7 +122,7 @@ class TestComponentBase(unittest.TestCase):
             self.assertEqual(k, in_com._input_bits[v][1])
             self.assertIs(out_com, in_com._input_bits[v][0])
 
-            self.assert_(out_com._output_bits[k][1])
+            self.assertIn(k, out_com.occupied_outputs)
 
         self.assertIn(out_com, in_com.parents)
         self.assertIn(in_com, out_com.children)
@@ -109,16 +131,14 @@ class TestComponentBase(unittest.TestCase):
         """
         Test evaluate_inputs method.
         """
-        in_com = ComponentBase('', 2, 0)
-        out_com1 = ComponentBase('', 0, 1)
-        out_com2 = ComponentBase('', 0, 1)
+        in_com = ComponentBase('', 5, 0)
+        out_com1 = ComponentMockZero('', 0, 2)
+        out_com2 = ComponentMockOne('', 0, 3)
 
-        self.add_input_alias(in_com, out_com1, {0: 0})
-        self.add_input_alias(in_com, out_com2, {0: 1})
+        self.add_input_alias(in_com, out_com1, {0: 0, 1: 1})
+        self.add_input_alias(in_com, out_com2, {0: 2, 1: 3, 2: 4})
 
-        out_com2._output_bits[0][0] = 1
-
-        self.assertEqual([-1, 1], in_com.evaluate_inputs())
+        self.assertEqual([0, 0, 1, 1, 1], in_com.evaluate_inputs())
 
     def test_remove_input(self):
         """
@@ -134,7 +154,7 @@ class TestComponentBase(unittest.TestCase):
         self.assertNotIn(out_com, in_com.parents)
 
         self.assertIsNone(in_com._input_bits[0])
-        self.assert_(not out_com._output_bits[0][1])
+        self.assertNotIn(0, out_com.occupied_outputs)
 
     def test_disconnect_inputs(self):
         """
@@ -155,8 +175,8 @@ class TestComponentBase(unittest.TestCase):
         self.assertNotIn(out_com1, in_com.parents)
         self.assertNotIn(out_com2, in_com.parents)
 
-        self.assert_(not out_com1._output_bits[0][1])
-        self.assert_(not out_com2._output_bits[0][1])
+        self.assertNotIn(0, out_com1.occupied_outputs)
+        self.assertNotIn(0, out_com2.occupied_outputs)
 
     def test_disconnect_outputs(self):
         in_com1 = ComponentBase('', 1, 0)
@@ -168,7 +188,7 @@ class TestComponentBase(unittest.TestCase):
 
         out_com.disconnect_outputs()
 
-        self.assertEqual([[-1, False], [-1, False]], out_com._output_bits)
+        self.assertEqual([-1, -1], out_com.output_bits)
         self.assertEqual([None], in_com1._input_bits)
         self.assertEqual([None], in_com2._input_bits)
 
@@ -178,7 +198,7 @@ class TestComponentBase(unittest.TestCase):
         """
         for k, v in mapping.items():
             in_com._input_bits[v] = (out_com, k)
-            out_com._output_bits[k][1] = True
+            out_com.occupied_outputs.add(k)
 
         in_com.parents.append(out_com)
         out_com.children.append(in_com)

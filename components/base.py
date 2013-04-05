@@ -17,9 +17,10 @@ class ComponentBase(object):
         # the tuple represents the output bit number that is wired to this input bit from the Component.
         self._input_bits = [None] * input_bits
 
-        # Each index represents an output bit, and should contain a 2-element list [int, bool]. The first element in
-        # the list is the output bit (0, 1, or -1) and the boolean value represents if the bit is already wired.
-        self._output_bits = [[-1, False]] * output_bits
+        # Each list index corresponds to an output bit.
+        self.output_bits = [-1] * output_bits
+        # Set of output bits that are wired already
+        self.occupied_outputs = set()
 
         # Graph edges for representing circuits as graphs
         self.parents = []
@@ -37,7 +38,7 @@ class ComponentBase(object):
         @type mapping: dict
         """
         # TODO: rewrite more efficiently (backtracking)
-        if len(mapping.keys()) > len(component._output_bits):
+        if len(mapping.keys()) > len(component.output_bits):
             raise ValueError('Connections must be one-to-one. Too many output keys in mapping')
 
         for i in mapping.values():
@@ -48,16 +49,16 @@ class ComponentBase(object):
                 raise ValueError('Connections must be one-to-one. Input bit already occupied')
 
         for i in mapping.keys():
-            if i >= len(component._output_bits) or i < 0:
+            if i >= len(component.output_bits) or i < 0:
                 raise ValueError('Invalid output bit number %d: not addressable bit.' % i)
 
-            if component._output_bits[i][1]:
+            if i in component.occupied_outputs:
                 raise ValueError('Connections must be one-to-one. Output bit already occupied.')
 
         for k, v in mapping.items():
             # Create the mapping and mark parent output bit as occupied.
             self._input_bits[v] = (component, k)
-            component._output_bits[k][1] = True
+            component.occupied_outputs.add(k)
 
         if component not in self.parents:
             self.parents.append(component)
@@ -73,10 +74,10 @@ class ComponentBase(object):
         result = [0] * len(self._input_bits)
         for j, tup in enumerate(self._input_bits):
             component, i = tup
-            if component._output_bits[i][0] == -1:
+            if component.output_bits[i] == -1:
                 component.evaluate()
 
-            result[j] = component._output_bits[i][0]
+            result[j] = component.output_bits[i]
 
         return result
 
@@ -94,7 +95,7 @@ class ComponentBase(object):
         """
         for component, j in self._input_bits:
             # Free up the parent output bit
-            component._output_bits[j][1] = False
+            component.occupied_outputs.discard(j)
 
         unique_components = set([input_tuple[0] for input_tuple in self._input_bits])
         for component in unique_components:
@@ -129,5 +130,5 @@ class ComponentBase(object):
             c, j = tup
             if c == component:
                 # 'Disconnect' output and input bit
-                component._output_bits[j][1] = False
+                component.occupied_outputs.discard(j)
                 self._input_bits[i] = None
