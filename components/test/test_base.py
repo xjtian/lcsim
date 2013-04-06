@@ -3,27 +3,7 @@ __author__ = 'jacky'
 import unittest
 from components.base import ComponentBase
 
-
-class ComponentMockZero(ComponentBase):
-    """
-    Mock implementation of ComponentBase, all bits evaluate to 0.
-    """
-    def __init__(self, name, input_bits, output_bits, *args, **kwargs):
-        super(ComponentMockZero, self).__init__(name, input_bits, output_bits, *args, **kwargs)
-
-    def evaluate(self):
-        self.output_bits = [0] * len(self.output_bits)
-
-
-class ComponentMockOne(ComponentBase):
-    """
-    Mock implementation of ComponentBase, all bits evaluate to 1.
-    """
-    def __init__(self, name, input_bits, output_bits, *args, **kwargs):
-        super(ComponentMockOne, self).__init__(name, input_bits, output_bits, *args, **kwargs)
-
-    def evaluate(self):
-        self.output_bits = [1] * len(self.output_bits)
+from components.test import mocks
 
 
 class TestComponentBase(unittest.TestCase):
@@ -132,8 +112,8 @@ class TestComponentBase(unittest.TestCase):
         Test evaluate_inputs method.
         """
         in_com = ComponentBase('', 5, 0)
-        out_com1 = ComponentMockZero('', 0, 2)
-        out_com2 = ComponentMockOne('', 0, 3)
+        out_com1 = mocks.ComponentMockZero('', 0, 2)
+        out_com2 = mocks.ComponentMockOne('', 0, 3)
 
         self.add_input_alias(in_com, out_com1, {0: 0, 1: 1})
         self.add_input_alias(in_com, out_com2, {0: 2, 1: 3, 2: 4})

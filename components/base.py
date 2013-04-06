@@ -1,6 +1,17 @@
 __author__ = 'Jacky Tian'
 
 
+class MissingInputException(Exception):
+    """
+    Exception that is thrown when a component is evaluated without enough input bits connected.
+    """
+    def __init__(self, message=''):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 class ComponentBase(object):
     """
     Base class for circuit components. Each client class is responsible for implementing the evaluate() method.
