@@ -30,7 +30,7 @@ class ANDGate(LogicGateBase):
         super(ANDGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = inputs[0] and inputs[1]
+        self.output_bits[0] = int(inputs[0] and inputs[1])
 
 
 class ORGate(LogicGateBase):
@@ -44,7 +44,7 @@ class ORGate(LogicGateBase):
         super(ORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = inputs[0] or inputs[1]
+        self.output_bits[0] = int(inputs[0] or inputs[1])
 
 
 class XORGate(LogicGateBase):
@@ -72,7 +72,7 @@ class NOTGate(LogicGateBase):
         super(NOTGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = 0 if inputs[0] else 1
+        self.output_bits[0] = int(not inputs[0])
 
 
 class NANDGate(LogicGateBase):
@@ -86,7 +86,7 @@ class NANDGate(LogicGateBase):
         super(NANDGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = not (inputs[0] and inputs[1])
+        self.output_bits[0] = int(not (inputs[0] and inputs[1]))
 
 
 class NORGate(LogicGateBase):
@@ -100,7 +100,7 @@ class NORGate(LogicGateBase):
         super(NORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = not(inputs[0] ^ inputs[1])
+        self.output_bits[0] = int(not(inputs[0] or inputs[1]))
 
 
 class XNORGate(LogicGateBase):
@@ -114,4 +114,4 @@ class XNORGate(LogicGateBase):
         super(XNORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = not(inputs[0] and inputs[1]) or (inputs[0] and inputs[1])
+        self.output_bits[0] = int(not(inputs[0] ^ inputs[1]))
