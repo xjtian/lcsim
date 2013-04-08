@@ -32,7 +32,6 @@ class SourceMock(base.ComponentBase):
     def __init__(self, name, input_bits, output_list):
         super(SourceMock, self).__init__(name, input_bits, len(output_list))
         self.output_list = output_list
-        self.output_bits = output_list
 
     def evaluate(self):
         self.output_bits = self.output_list

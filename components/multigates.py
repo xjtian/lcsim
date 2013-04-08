@@ -51,12 +51,10 @@ class MultiANDGate(MultiGateBase):
 
     def evaluate(self):
         super(MultiANDGate, self).evaluate()
-        for component, i in self._input_bits:
-            if not component.output_bits[i]:
-                self.output_bits[0] = 0
-                return
-
-        self.output_bits[0] = 1
+        if all(self.evaluate_inputs()):
+            self.output_bits[0] = 1
+        else:
+            self.output_bits[0] = 0
 
 
 class MultiORGate(MultiGateBase):
@@ -68,12 +66,11 @@ class MultiORGate(MultiGateBase):
 
     def evaluate(self):
         super(MultiORGate, self).evaluate()
-        for component, i in self._input_bits:
-            if component.output_bits[i]:
-                self.output_bits[0] = 1
-                return
 
-        self.output_bits[0] = 0
+        if any(self.evaluate_inputs()):
+            self.output_bits[0] = 1
+        else:
+            self.output_bits[0] = 0
 
 
 class MultiNOTGate(MultiGateBase):
@@ -85,11 +82,7 @@ class MultiNOTGate(MultiGateBase):
 
     def evaluate(self):
         super(MultiNOTGate, self).evaluate()
-        self.output_bits = [-1] * len(self._input_bits)
-
-        for i, bit in enumerate(self._input_bits):
-            component, i = bit
-            self.output_bits[i] = int(not component.output_bits[i])
+        self.output_bits = map(lambda x: int(not x), self.evaluate_inputs())
 
 
 class MultiXORGate(MultiGateBase):
@@ -101,10 +94,4 @@ class MultiXORGate(MultiGateBase):
 
     def evaluate(self):
         super(MultiXORGate, self).evaluate()
-
-        count = 0
-        for component, i in self._input_bits:
-            if component.output_bits[i]:
-                count += 1
-
-        self.output_bits[0] = count % 2
+        self.output_bits[0] = sum(self.evaluate_inputs()) % 2
