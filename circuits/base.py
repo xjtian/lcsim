@@ -291,6 +291,11 @@ def merge_circuits(name, c1, c2):
     of c2 become the output components of the merged circuit. Returns the
     merged circuit.
 
+    Unless all output bits of c1 and all input bits of c2 are connected,
+    you should hang on to those references so you can still manipulate the
+    output components of c1 and input components of c2 that get hidden when
+    the two circuits are merged.
+
     Parameters:
         name:
             The name to give to the resulting circuit. Can be any arbitrary
@@ -302,6 +307,19 @@ def merge_circuits(name, c1, c2):
 
     Returns:
         The resulting merged circuit.
+
+    Example usage:
+        >>> from components import gates, sources
+        >>> s1 = sources.DigitalArbitrary([0, 1, 1, 1])
+        >>> a = gates.ANDGate()
+        >>> b = gates.ORGate()
+        >>> c = gates.XORGate()
+        >>> a.add_input(s1, {0: 0, 1: 1})
+        >>> b.add_input(s1, {2: 0, 3: 1})
+        >>> left_circuit = CircuitBase('example', [s1], [a,b])
+        >>> right_circuit = CircuitBase('example2', [c], [c])
+        >>> connect_circuits(left_circuit, right_circuit, {0: 0, 1: 1})
+        >>> merge_circuits('example3', left_circuit, right_circuit).evaluate()
+        [1]
     """
-    # TODO: make this
-    raise NotImplementedError()
+    return CircuitBase(name, c1.inputs, c2.outputs)
