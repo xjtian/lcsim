@@ -1,7 +1,7 @@
 __author__ = 'Jacky'
 
 
-class CircuitBase(object):
+class Circuit(object):
     """
     Base class for all circuits. Abstractly, a circuit is just a graph
     consisting of circuit elements as nodes and the wires between them as
@@ -39,7 +39,7 @@ class CircuitBase(object):
             >>> c = gates.ANDGate()
             >>> c.add_input(a, {0: 0})
             >>> c.add_input(b, {0: 1})
-            >>> circuit = CircuitBase('example', [a, b], [c])
+            >>> circuit = Circuit('example', [a, b], [c])
             >>> circuit.input_size
             4
             >>> circuit.output_size
@@ -69,7 +69,7 @@ class CircuitBase(object):
 
         Example usage:
             >>> from components import gates
-            >>> c = CircuitBase('example', [], [])
+            >>> c = Circuit('example', [], [])
             >>> c.append_input(gates.ANDGate())
             >>> c.input_size
             2
@@ -88,7 +88,7 @@ class CircuitBase(object):
 
         Example usage:
             >>> from components import gates
-            >>> c = CircuitBase('example', [], [])
+            >>> c = Circuit('example', [], [])
             >>> c.prepend_input(gates.ANDGate())
             >>> c.input_size
             2
@@ -107,7 +107,7 @@ class CircuitBase(object):
 
         Example usage:
             >>> from components import gates
-            >>> c = CircuitBase('example', [], [])
+            >>> c = Circuit('example', [], [])
             >>> c.append_output(gates.ANDGate())
             >>> c.output_size
             1
@@ -126,7 +126,7 @@ class CircuitBase(object):
 
         Example usage:
             >>> from components import gates
-            >>> c = CircuitBase('example', [], [])
+            >>> c = Circuit('example', [], [])
             >>> c.prepend_output(gates.ANDGate())
             >>> c.output_size
             1
@@ -159,7 +159,7 @@ class CircuitBase(object):
             >>> b = gates.ORGate()
             >>> a.add_input(s, {0: 0, 1: 1})
             >>> b.add_input(s, {2: 0, 3: 1})
-            >>> circuit = CircuitBase('example', [s], [a, b])
+            >>> circuit = Circuit('example', [s], [a, b])
             >>> circuit.evaluate()
             [0, 1]
         """
@@ -183,9 +183,9 @@ def connect_circuits(out_circuit, in_circuit, mapping):
 
     Parameters:
         out_circuit:
-            Circuit (inherits from CircuitBase) to wire connections from.
+            Circuit (inherits from Circuit) to wire connections from.
         in_circuit:
-            Circuit (inherits from CircuitBase) to wire connections to.
+            Circuit (inherits from Circuit) to wire connections to.
         mapping:
             dictionary of int: int keyed by output bit number of output
              circuit to input bit number of target input circuit.
@@ -201,8 +201,8 @@ def connect_circuits(out_circuit, in_circuit, mapping):
         >>> a = gates.ORGate()
         >>> b = gates.NOTGate()
         >>> a.add_input(s, {0: 0, 1: 1})
-        >>> c1 = CircuitBase('example1', [s], [a])
-        >>> c2 = CircuitBase('example2', [b], [b])
+        >>> c1 = Circuit('example1', [s], [a])
+        >>> c2 = Circuit('example2', [b], [b])
         >>> connect_circuits(c1, c2, {0: 0})
         >>> c2.evaluate()
         [0]
@@ -275,13 +275,13 @@ def stack_circuits(name, c1, c2):
         >>> b = gates.ORGate()
         >>> a.add_input(s1, {0: 0, 1: 1})
         >>> b.add_input(s2, {0: 0, 1: 1})
-        >>> c1 = CircuitBase('example1', [s1], [a])
-        >>> c2 = CircuitBase('example2', [s2], [b])
+        >>> c1 = Circuit('example1', [s1], [a])
+        >>> c2 = Circuit('example2', [s2], [b])
         >>> c3 = stack_circuits('example3', c1, c2)
         >>> c3.evaluate()
         [1, 0]
     """
-    return CircuitBase(name, c1.inputs + c2.inputs, c1.outputs + c2.outputs)
+    return Circuit(name, c1.inputs + c2.inputs, c1.outputs + c2.outputs)
 
 
 def merge_circuits(name, c1, c2):
@@ -316,10 +316,10 @@ def merge_circuits(name, c1, c2):
         >>> c = gates.XORGate()
         >>> a.add_input(s1, {0: 0, 1: 1})
         >>> b.add_input(s1, {2: 0, 3: 1})
-        >>> left_circuit = CircuitBase('example', [s1], [a,b])
-        >>> right_circuit = CircuitBase('example2', [c], [c])
+        >>> left_circuit = Circuit('example', [s1], [a,b])
+        >>> right_circuit = Circuit('example2', [c], [c])
         >>> connect_circuits(left_circuit, right_circuit, {0: 0, 1: 1})
         >>> merge_circuits('example3', left_circuit, right_circuit).evaluate()
         [1]
     """
-    return CircuitBase(name, c1.inputs, c2.outputs)
+    return Circuit(name, c1.inputs, c2.outputs)
