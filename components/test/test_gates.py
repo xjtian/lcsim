@@ -9,7 +9,8 @@ from components.test import mocks
 class TestLogicGateBase(unittest.TestCase):
     def test_evaluate(self):
         """
-        Make sure that the base evaluate() method throws an exception when inputs aren't full and doesn't when they are.
+        Make sure that the base evaluate() method throws an exception when
+        inputs aren't full and doesn't when they are.
         """
         gate = gates.LogicGateBase('Test', 2, 1)
         self.assertRaises(base.MissingInputException, gate.evaluate)
@@ -64,9 +65,11 @@ def input_00(gate):
 
 class LogicGateTestCasesBase(unittest.TestCase):
     """
-    Base TestCase for the two-input logic gates (everything except NOT). Client classes override setUp to specify the
-    type of gate to test and the list of expected results.
+    Base TestCase for the two-input logic gates (everything except NOT). Client
+    classes override setUp to specify the type of gate to test and the list
+    of expected results.
     """
+
     def setUp(self):
         self.gate = None
         self.expected = [None] * 4

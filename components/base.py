@@ -3,8 +3,10 @@ __author__ = 'Jacky Tian'
 
 class MissingInputException(Exception):
     """
-    Exception that is thrown when a component is evaluated without enough input bits connected.
+    Exception that is thrown when a component is evaluated without enough
+    input bits connected.
     """
+
     def __init__(self, message=''):
         self.message = message
 
@@ -14,18 +16,20 @@ class MissingInputException(Exception):
 
 class ComponentBase(object):
     """
-    Base class for circuit components. Each client class is responsible for implementing the evaluate() method.
+    Base class for circuit components. Each client class is responsible for
+    implementing the evaluate() method.
     """
 
     def __init__(self, name, input_bits, output_bits, *args, **kwargs):
         """
-        Initialize a base circuit component. Specify the name of the component, the number of input bits, and the
-        number of output bits.
+        Initialize a base circuit component. Specify the name of the
+        component, the number of input bits, and the number of output bits.
         """
         self.name = name
 
-        # Each index represents an input bit, and should contain a tuple (Component, int) where the second element in
-        # the tuple represents the output bit number that is wired to this input bit from the Component.
+        # Each index represents an input bit, and contains a tuple
+        # (Component, int). int is the number of the output bit that is
+        # wired to this input bit from the Component.
         self._input_bits = [None] * input_bits
 
         # Each list index corresponds to an output bit.
@@ -39,32 +43,36 @@ class ComponentBase(object):
 
     def add_input(self, component, mapping):
         """
-        Connect another component to this component by connecting output bits to input bits. Connections are one-to-one,
-        so ValueError will be raised if occupied bits are attempted to be reconnected.
-
-        @param component: Input component
-        @type component: ComponentBase
-
-        @param mapping: Dictionary keyed by output bit number to input bit number.
-        @type mapping: dict
+        Connect another component to this component by connecting output
+        bits to input bits. Connections are one-to-one,
+        so ValueError will be  raised if occupied bits are attempted to be
+        reconnected.
         """
-        # TODO: rewrite more efficiently (backtracking)
         if len(mapping.keys()) > len(component.output_bits):
-            raise ValueError('Connections must be one-to-one. Too many output keys in mapping')
+            raise ValueError(
+                'Connections must be one-to-one. Too many output keys.')
+        if len(mapping.values()) > len(self._input_bits):
+            raise ValueError(
+                'Connections must be one-to-one. Too many input values.'
+            )
 
         for i in mapping.values():
             if i >= len(self._input_bits) or i < 0:
-                raise ValueError('Invalid input bit number %d: not addressable bit.' % i)
+                raise ValueError(
+                    'Invalid input bit number %d: not addressable bit.' % i)
 
             if self._input_bits[i] is not None:
-                raise ValueError('Connections must be one-to-one. Input bit already occupied')
+                raise ValueError(
+                    'Connections must be one-to-one. Input bit occupied')
 
         for i in mapping.keys():
             if i >= len(component.output_bits) or i < 0:
-                raise ValueError('Invalid output bit number %d: not addressable bit.' % i)
+                raise ValueError(
+                    'Invalid output bit number %d: not addressable bit.' % i)
 
             if i in component.occupied_outputs:
-                raise ValueError('Connections must be one-to-one. Output bit already occupied.')
+                raise ValueError(
+                    'Connections must be one-to-one. Output bit occupied.')
 
         for k, v in mapping.items():
             # Create the mapping and mark parent output bit as occupied.
@@ -79,8 +87,9 @@ class ComponentBase(object):
 
     def evaluate_inputs(self):
         """
-        Evaluates all input connections to this component and returns an array of input bit values in order. This will
-        alter the state of connected parent components.
+        Evaluates all input connections to this component and returns an
+        array of input bit values in order. This will alter the state of
+        connected parent components.
         """
         result = [0] * len(self._input_bits)
         for j, tup in enumerate(self._input_bits):
@@ -94,21 +103,23 @@ class ComponentBase(object):
 
     def evaluate(self):
         """
-        Evaluate the output result of this component, which is stored in _output_bits. Should be implemented by client
+        Evaluate the output result of this component,
+        which is stored in _output_bits. Should be implemented by client
         component classes.
         """
         pass
 
     def disconnect_inputs(self):
         """
-        Free all input bits for this component. Calling this method will alter the state of the connected parent
-        components.
+        Free all input bits for this component. Calling this method will
+        alter the state of the connected parent components.
         """
         for component, j in self._input_bits:
             # Free up the parent output bit
             component.occupied_outputs.discard(j)
 
-        unique_components = set([input_tuple[0] for input_tuple in self._input_bits])
+        unique_components = set(
+            [input_tuple[0] for input_tuple in self._input_bits])
         for component in unique_components:
             component.children.remove(self)
             self.parents.remove(component)
@@ -117,8 +128,8 @@ class ComponentBase(object):
 
     def disconnect_outputs(self):
         """
-        Free all output bits for this component. Calling this method will alter the state of the connected child
-        components.
+        Free all output bits for this component. Calling this method will
+        alter the state of the connected child components.
         """
         for component in self.children:
             component._remove_input(self)
@@ -127,11 +138,9 @@ class ComponentBase(object):
 
     def _remove_input(self, component):
         """
-        Remove a specific input component from the inputs for this component. Exists as a helper method for
-        disconnect_outputs and should not normally be called by client implementations.
-
-        @param component: Input component to remove.
-        @type component: ComponentBase
+        Remove a specific input component from the inputs for this
+        component. Exists as a helper method for disconnect_outputs and
+        should not normally be called by client implementations.
         """
         if component not in self.parents:
             return

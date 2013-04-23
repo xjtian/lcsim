@@ -15,16 +15,19 @@ class TestMultiGateBase(unittest.TestCase):
     def test_add_input(self):
         gate = multigates.MultiGateBase('Test', 1, 2)
         try:
-            gate.add_input(mocks.ComponentMockOne('', 0, 10), {i: i for i in xrange(0, 10)})
+            gate.add_input(mocks.ComponentMockOne('', 0, 10),
+                           {i: i for i in xrange(0, 10)})
         except ValueError as e:
             self.fail('ValueError: %s' % e.message)
 
         self.assertEqual(10, len(gate._input_bits))
         gate.disconnect_inputs()
 
-        # Even though the mapping goes up to 6, input bit 0 is unused so the length of input bits should still be 5
+        # Even though the mapping goes up to 6, input bit 0 is unused so the
+        # length of input bits should still be 5
         try:
-            gate.add_input(mocks.ComponentMockOne('', 0, 5), {i: i + 1 for i in xrange(0, 5)})
+            gate.add_input(mocks.ComponentMockOne('', 0, 5),
+                           {i: i + 1 for i in xrange(0, 5)})
         except ValueError as e:
             self.fail('ValueError: %s' % e.message)
 
@@ -32,7 +35,8 @@ class TestMultiGateBase(unittest.TestCase):
 
     def test_evaluate(self):
         gate = mocks.MultiGateAddInputMock('Test', 12, 2)
-        gate.add_input(mocks.ComponentMockOne('', 0, 12), {i: i for i in xrange(0, 12)})
+        gate.add_input(mocks.ComponentMockOne('', 0, 12),
+                       {i: i for i in xrange(0, 12)})
 
         try:
             gate.evaluate()
@@ -40,7 +44,8 @@ class TestMultiGateBase(unittest.TestCase):
             self.fail('evaluate() threw unexpected MissingInputException')
 
         gate = mocks.MultiGateAddInputMock('Test', 12, 2)
-        gate.add_input(mocks.ComponentMockZero('', 0, 10), {i: i for i in xrange(0, 10)})
+        gate.add_input(mocks.ComponentMockZero('', 0, 10),
+                       {i: i for i in xrange(0, 10)})
 
         self.assertRaises(base.MissingInputException, gate.evaluate)
 
@@ -55,7 +60,7 @@ class TestMultiANDGate(unittest.TestCase):
         self.assertEqual('mAND', self.gate.name)
 
     def test_evaluate(self):
-        source_true = mocks.SourceMock('alltrue', 0, [1, 1, 1, 1, 1, 1])
+        source_true = mocks.SourceMock('all_true', 0, [1, 1, 1, 1, 1, 1])
         source_false = mocks.SourceMock('', 0, [1, 1, 1, 0])
 
         self.gate.add_input(source_true, {i: i for i in xrange(0, 5)})

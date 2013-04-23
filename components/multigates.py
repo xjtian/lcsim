@@ -14,11 +14,13 @@ class MultiGateBase(base.ComponentBase):
 
     def add_input(self, component, mapping):
         """
-        Appends input spaces as necessary and consolidates the input bits to eliminate unused inputs.
+        Appends input spaces as necessary and consolidates the input bits to
+        eliminate unused inputs.
         """
         max_val = max(mapping.values())
         if max_val >= len(self._input_bits):
-            self._input_bits.extend([None] * (max_val - len(self._input_bits) + 1))
+            self._input_bits.extend(
+                [None] * (max_val - len(self._input_bits) + 1))
 
         super(MultiGateBase, self).add_input(component, mapping)
 
@@ -27,7 +29,8 @@ class MultiGateBase(base.ComponentBase):
 
     def evaluate(self):
         """
-        Called by client classes before evaluation logic to make sure gate has enough input bits to function.
+        Called by client classes before evaluation logic to make sure gate
+        has enough input bits to function.
         """
         count = 0
         for i, bit in enumerate(self._input_bits):
@@ -38,7 +41,8 @@ class MultiGateBase(base.ComponentBase):
 
         if count < self.min_input:
             raise base.MissingInputException(
-                '%s gate requires at least %d input bits. Only %d are connected.' % (self.name, self.min_input, count))
+                '%s gate requires at least %d input bits. '
+                'Only %d are connected.' % (self.name, self.min_input, count))
 
 
 class MultiANDGate(MultiGateBase):
@@ -61,6 +65,7 @@ class MultiORGate(MultiGateBase):
     """
     OR gate with multiple fan-in.
     """
+
     def __init__(self):
         super(MultiORGate, self).__init__('mOR', 2, 1)
 
@@ -77,6 +82,7 @@ class MultiNOTGate(MultiGateBase):
     """
     NOT gate with multiple fan-in and corresponding multiple fan-out
     """
+
     def __init__(self):
         super(MultiNOTGate, self).__init__('mNOT', 1, 1)
 
@@ -87,8 +93,10 @@ class MultiNOTGate(MultiGateBase):
 
 class MultiXORGate(MultiGateBase):
     """
-    XOR gate with multiple fan-in. Outputs 1 if the number of high input bits is odd, 0 otherwise.
+    XOR gate with multiple fan-in. Outputs 1 if the number of high input
+    bits is odd, 0 otherwise.
     """
+
     def __init__(self):
         super(MultiXORGate, self).__init__('mXOR', 2, 1)
 
