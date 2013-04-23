@@ -5,16 +5,15 @@ from components import base
 
 class DigitalSourceBase(base.ComponentBase):
     """
-    Base class for all digital source components
+    Base class for all digital source components. Digital sources are gates
+    that map 0->n bits, always outputting the same permutation of bit values.
     """
     def __init__(self, name, output):
         """
         Initialize a new digital source component.
-
-        @param output: A list of bits (0 or 1) that this component will always evaluate to.
         """
         if any([x != 0 and x != 1 for x in output]):
-            raise ValueError('Bits can only be 0 or 1! Invalid value encountered.')
+            raise ValueError('Bits can only be 0 or 1. Invalid value.')
 
         super(DigitalSourceBase, self).__init__(name, 0, len(output))
         # Keep a private version just in case output_bits is changed somehow.
@@ -43,7 +42,8 @@ class DigitalOne(DigitalSourceBase):
 
 class DigitalArbitrary(DigitalSourceBase):
     """
-    Any arbitrary digital source that has no inputs and always outputs a set number and arrangement of bits.
+    Any arbitrary digital source that has no inputs and always outputs a set
+    number and arrangement of bits.
     """
     def __init__(self, output):
         super(DigitalArbitrary, self).__init__('DArb', output)

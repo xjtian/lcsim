@@ -28,11 +28,10 @@ class TestComponentBase(unittest.TestCase):
         self.assertEqual(0, in_com._input_bits[0][1])
         self.assertIs(out_com, in_com._input_bits[0][0])
 
-        self.assertIn(0, out_com.occupied_outputs)
-
     def test_add_input_graph(self):
         """
-        Test add_input properly puts components in children and parent lists (representing edges).
+        Test add_input properly puts components in children and parent lists
+        (representing edges).
         """
         in_com = ComponentBase('', 1, 0)
         out_com = ComponentBase('', 0, 1)
@@ -91,9 +90,6 @@ class TestComponentBase(unittest.TestCase):
         in_com.add_input(out_com1, {0: 1})
         self.assertRaises(ValueError, in_com.add_input, out_com2, {0: 1})
 
-        # Wiring from occupied output bit
-        self.assertRaises(ValueError, in_com.add_input, out_com1, {0: 2})
-
     def add_input_helper(self, in_com, out_com, mapping):
         """
         Helper method for add_input tests.
@@ -101,8 +97,6 @@ class TestComponentBase(unittest.TestCase):
         for k, v in mapping.items():
             self.assertEqual(k, in_com._input_bits[v][1])
             self.assertIs(out_com, in_com._input_bits[v][0])
-
-            self.assertIn(k, out_com.occupied_outputs)
 
         self.assertIn(out_com, in_com.parents)
         self.assertIn(in_com, out_com.children)
@@ -134,7 +128,6 @@ class TestComponentBase(unittest.TestCase):
         self.assertNotIn(out_com, in_com.parents)
 
         self.assertIsNone(in_com._input_bits[0])
-        self.assertNotIn(0, out_com.occupied_outputs)
 
     def test_disconnect_inputs(self):
         """
@@ -155,9 +148,6 @@ class TestComponentBase(unittest.TestCase):
         self.assertNotIn(out_com1, in_com.parents)
         self.assertNotIn(out_com2, in_com.parents)
 
-        self.assertNotIn(0, out_com1.occupied_outputs)
-        self.assertNotIn(0, out_com2.occupied_outputs)
-
     def test_disconnect_outputs(self):
         in_com1 = ComponentBase('', 1, 0)
         in_com2 = ComponentBase('', 1, 0)
@@ -174,11 +164,11 @@ class TestComponentBase(unittest.TestCase):
 
     def add_input_alias(self, in_com, out_com, mapping):
         """
-        Alters state of components like add_input should without depending on the method itself.
+        Alters state of components like add_input should without depending on
+        the method itself.
         """
         for k, v in mapping.items():
             in_com._input_bits[v] = (out_com, k)
-            out_com.occupied_outputs.add(k)
 
         in_com.parents.append(out_com)
         out_com.children.append(in_com)
