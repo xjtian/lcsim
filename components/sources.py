@@ -5,7 +5,8 @@ from components import base
 
 class DigitalSourceBase(base.ComponentBase):
     """
-    Base class for all digital source components
+    Base class for all digital source components. Digital sources are gates
+    that map 0->n bits, always outputting the same permutation of bit values.
     """
     def __init__(self, name, output):
         """

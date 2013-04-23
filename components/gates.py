@@ -15,7 +15,8 @@ class LogicGateBase(base.ComponentBase):
     def evaluate(self):
         """
         Called by client classes before evaluation logic to make sure gate
-        has enough input components.
+        has enough input components. Does not contain any logic beyond
+        checking for necessary inputs.
         """
         for i, bit in enumerate(self._input_bits):
             if not bit:

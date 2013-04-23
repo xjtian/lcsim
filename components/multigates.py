@@ -14,8 +14,9 @@ class MultiGateBase(base.ComponentBase):
 
     def add_input(self, component, mapping):
         """
-        Appends input spaces as necessary and consolidates the input bits to
-        eliminate unused inputs.
+        Extends ComponentBase.add_input() to allow for a dynamically
+        resizeable input space. Also strips out unused input spaces so that
+        all input spaces in the gate are always wired.
         """
         max_val = max(mapping.values())
         if max_val >= len(self._input_bits):
@@ -30,7 +31,7 @@ class MultiGateBase(base.ComponentBase):
     def evaluate(self):
         """
         Called by client classes before evaluation logic to make sure gate
-        has enough input bits to function.
+        has enough input bits to function. No other logic is contained.
         """
         count = 0
         for i, bit in enumerate(self._input_bits):
