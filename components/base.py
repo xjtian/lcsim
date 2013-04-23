@@ -48,8 +48,6 @@ class ComponentBase(object):
 
         # Each list index corresponds to an output bit.
         self.output_bits = [-1] * output_bits
-        # Set of output bits that are wired already
-        self.occupied_outputs = set()
 
         # Graph edges for representing circuits as graphs
         self.parents = []
@@ -80,9 +78,6 @@ class ComponentBase(object):
             ValueError if the mapping is invalid in some way: not one-to-one
             or outside the range of addressable bits in input/output spaces.
         """
-        if len(mapping.keys()) > len(component.output_bits):
-            raise ValueError(
-                'Connections must be one-to-one. Too many output keys.')
         if len(mapping.values()) > len(self._input_bits):
             raise ValueError(
                 'Connections must be one-to-one. Too many input values.'
@@ -102,14 +97,9 @@ class ComponentBase(object):
                 raise ValueError(
                     'Invalid output bit number %d: not addressable bit.' % i)
 
-            if i in component.occupied_outputs:
-                raise ValueError(
-                    'Connections must be one-to-one. Output bit occupied.')
-
         for k, v in mapping.items():
-            # Create the mapping and mark parent output bit as occupied.
+            # Create the mapping
             self._input_bits[v] = (component, k)
-            component.occupied_outputs.add(k)
 
         if component not in self.parents:
             self.parents.append(component)
@@ -164,10 +154,6 @@ class ComponentBase(object):
         alter the state of the connected parent components as well by
         disconnecting their output bits.
         """
-        for component, j in self._input_bits:
-            # Free up the parent output bit
-            component.occupied_outputs.discard(j)
-
         unique_components = set(
             [input_tuple[0] for input_tuple in self._input_bits])
         for component in unique_components:
@@ -201,6 +187,5 @@ class ComponentBase(object):
         for i, tup in enumerate(self._input_bits):
             c, j = tup
             if c == component:
-                # 'Disconnect' output and input bit
-                component.occupied_outputs.discard(j)
+                # 'Disconnect' input bit
                 self._input_bits[i] = None
