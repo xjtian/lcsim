@@ -32,7 +32,8 @@ class TestComponentBase(unittest.TestCase):
 
     def test_add_input_graph(self):
         """
-        Test add_input properly puts components in children and parent lists (representing edges).
+        Test add_input properly puts components in children and parent lists
+        (representing edges).
         """
         in_com = ComponentBase('', 1, 0)
         out_com = ComponentBase('', 0, 1)
@@ -174,7 +175,8 @@ class TestComponentBase(unittest.TestCase):
 
     def add_input_alias(self, in_com, out_com, mapping):
         """
-        Alters state of components like add_input should without depending on the method itself.
+        Alters state of components like add_input should without depending on
+        the method itself.
         """
         for k, v in mapping.items():
             in_com._input_bits[v] = (out_com, k)

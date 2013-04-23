@@ -24,7 +24,8 @@ class TestDigitalSourceBase(unittest.TestCase):
 
     def test_evaluate(self):
         gate = sources.DigitalSourceBase('Test', [0, 1, 1, 0, 1, 1])
-        # Arbitrarily modify output_bits to make sure it goes back to what it should be
+        # Arbitrarily modify output_bits to make sure it goes back to what
+        # it should be
         gate.output_bits = [1, 2, 3]
         gate.evaluate()
         self.assertEqual([0, 1, 1, 0, 1, 1], gate.output_bits)

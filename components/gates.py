@@ -5,7 +5,8 @@ from components import base
 
 class LogicGateBase(base.ComponentBase):
     """
-    Base class for all basic logic gates, itself a subclass of the ComponentBase class.
+    Base class for all basic logic gates, itself a subclass of the
+    ComponentBase class.
     """
 
     def __init__(self, name, input_bits, output_bits):
@@ -13,12 +14,15 @@ class LogicGateBase(base.ComponentBase):
 
     def evaluate(self):
         """
-        Called by client classes before evaluation logic to make sure gate has enough input components.
+        Called by client classes before evaluation logic to make sure gate
+        has enough input components. Does not contain any logic beyond
+        checking for necessary inputs.
         """
         for i, bit in enumerate(self._input_bits):
             if not bit:
                 raise base.MissingInputException(
-                    '%s gate requires %d input bits. Bit %d is missing.' % (self.name, len(self._input_bits), i))
+                    '%s gate requires %d input bits. Bit %d is missing.' % (
+                        self.name, len(self._input_bits), i))
 
 
 class ANDGate(LogicGateBase):
