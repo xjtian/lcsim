@@ -99,3 +99,49 @@ class TestCircuit(unittest.TestCase):
 
         c = circuit.Circuit('full_adder', [s], [xor2, or1])
         self.assertEqual([0, 1], c.evaluate())
+
+
+class TestCircuitFunctions(unittest.TestCase):
+    def test_connect_circuits(self):
+        a = gates.ANDGate()
+        b = gates.ORGate()
+        c = gates.XORGate()
+
+        c1 = circuit.Circuit('test1', [a, b], [a, b])
+        c2 = circuit.Circuit('test2', [c], [c])
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1})
+
+        self.assertEqual([(a, 0), (b, 0)], c._input_bits)
+
+    def test_stack_circuits(self):
+        a = gates.ANDGate()
+        b = gates.ORGate()
+
+        c1 = circuit.Circuit('test1', [a], [a])
+        c2 = circuit.Circuit('test2', [b], [b])
+
+        c3 = circuit.stack_circuits('test3', c1, c2)
+
+        self.assertEqual('test3', c3.name)
+        self.assertEqual([a, b], c3.inputs)
+        self.assertEqual([a, b], c3.outputs)
+
+        self.assertEqual(4, c3.input_size)
+        self.assertEqual(2, c3.output_size)
+
+    def test_merge_circuits(self):
+        a = gates.ANDGate()
+        b = gates.ORGate()
+        c = gates.XORGate()
+
+        c1 = circuit.Circuit('test1', [a, b], [a, b])
+        c2 = circuit.Circuit('test2', [c], [c])
+
+        c3 = circuit.merge_circuits('test3', c1, c2)
+
+        self.assertEqual([a, b], c3.inputs)
+        self.assertEqual([c], c3.outputs)
+
+        self.assertEqual(4, c3.input_size)
+        self.assertEqual(1, c3.output_size)
