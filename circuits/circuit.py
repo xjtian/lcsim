@@ -109,11 +109,15 @@ class Circuit(object):
                 raise ValueError('Invalid input component index %d' % v)
 
             if yes_input:
+                if k >= len(self._inputs):
+                    raise ValueError('Invalid input space index %d.' % k)
                 if self._inputs[k] is not None:
                     raise ValueError('Circuit input space already taken.')
                 if v >= len(component._input_bits):
                     raise ValueError('Invalid component input index %d' % v)
             else:
+                if k >= len(self._outputs):
+                    raise ValueError('Invalid output space index %d.' % k)
                 if self._outputs[k] is not None:
                     raise ValueError('Circuit output space already taken.')
                 if v >= len(component.output_bits):
