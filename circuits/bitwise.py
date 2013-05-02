@@ -22,15 +22,11 @@ def bitwise_and_circuit(bits):
     Example usage:
         >>> from components import sources
         >>> from circuits import circuit
-        >>> s1 = sources.DigitalArbitrary([0, 1, 1, 0])
-        >>> s2 = sources.DigitalArbitrary([0, 1, 0, 1])
-        >>> c1 = circuit.Circuit('in1', 0, 4)
-        >>> c2 = circuit.Circuit('in2', 0, 4)
-        >>> c1.add_output_component(s1, {0: 0, 1: 1, 2: 2, 3: 3})
-        >>> c2.add_output_component(s2, {0: 0, 1: 1, 2: 2, 3: 3})
+        >>> s = sources.DigitalArbitrary([0, 1, 1, 0, 0, 1, 0, 1])
+        >>> c = circuit.Circuit('in1', 0, 8)
+        >>> c.add_output_component(s, {i: i for i in xrange(0, 8)})
         >>> and_c = bitwise_and_circuit(4)
-        >>> circuit.connect_circuits(c1, and_c, {i: i for i in xrange(0, 4)})
-        >>> circuit.connect_circuits(c2, and_c, {0: 4, 1: 5, 2: 6, 3: 7})
+        >>> circuit.connect_circuits(c, and_c, {i: i for i in xrange(0, 8)})
         >>> and_c.evaluate()
         [0, 1, 0, 0]
     """
