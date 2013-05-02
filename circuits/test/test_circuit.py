@@ -102,3 +102,18 @@ class TestConnectCircuits(unittest.TestCase):
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2, 3: 3})
         self.assertEqual([(a, 0), (a, 1)], c._input_bits)
         self.assertEqual([(b, 0), (b, 1)], d._input_bits)
+
+
+class TestStackCircuits(unittest.TestCase):
+    def test_function(self):
+        c1 = circuit.Circuit('top', 2, 1)
+        c2 = circuit.Circuit('bottom', 2, 1)
+
+        c1._inputs = [1, 2]
+        c1._outputs = [3]
+        c2._inputs = [4, 5]
+        c2._outputs = [6]
+
+        c3 = circuit.stack_circuits('stacked', c1, c2)
+        self.assertEqual([1, 2, 4, 5], c3._inputs)
+        self.assertEqual([3, 6], c3._outputs)
