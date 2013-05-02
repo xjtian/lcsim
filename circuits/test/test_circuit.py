@@ -115,5 +115,22 @@ class TestStackCircuits(unittest.TestCase):
         c2._outputs = [6]
 
         c3 = circuit.stack_circuits('stacked', c1, c2)
+        self.assertEqual('stacked', c3.name)
         self.assertEqual([1, 2, 4, 5], c3._inputs)
         self.assertEqual([3, 6], c3._outputs)
+
+
+class TestMergeCircuits(unittest.TestCase):
+    def test_function(self):
+        c1 = circuit.Circuit('left', 2, 1)
+        c2 = circuit.Circuit('right', 1, 2)
+
+        c1._inputs = [1, 2]
+        c1._outputs = [3]
+        c2._inputs = [4]
+        c2._outputs = [5, 6]
+
+        c3 = circuit.merge_circuits('merged', c1, c2)
+        self.assertEqual('merged', c3.name)
+        self.assertEqual([1, 2], c3._inputs)
+        self.assertEqual([5, 6], c3._outputs)
