@@ -36,3 +36,69 @@ class TestCircuit(unittest.TestCase):
         self.assertRaises(ValueError, c.add_output_component, a, {-1: 0})
         self.assertRaises(ValueError, c.add_output_component, a, {3: 0})
         self.assertRaises(ValueError, c.add_output_component, a, {0: 4})
+
+
+class TestConnectCircuits(unittest.TestCase):
+    def test_one_to_one(self):
+        a = base.ComponentBase('a', 0, 1)
+        b = base.ComponentBase('b', 0, 1)
+        c = base.ComponentBase('c', 1, 0)
+        d = base.ComponentBase('d', 1, 0)
+
+        c1 = circuit.Circuit('c1', 0, 2)
+        c2 = circuit.Circuit('c2', 2, 0)
+
+        c1._outputs = [(a, 0), (b, 0)]
+        c2._inputs = [(c, 0), (d, 0)]
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1})
+        self.assertEqual([(a, 0)], c._input_bits)
+        self.assertEqual([(b, 0)], d._input_bits)
+
+    def test_one_to_many(self):
+        a = base.ComponentBase('a', 0, 3)
+        b = base.ComponentBase('b', 1, 0)
+        c = base.ComponentBase('c', 1, 0)
+        d = base.ComponentBase('d', 1, 0)
+
+        c1 = circuit.Circuit('c1', 0, 3)
+        c2 = circuit.Circuit('c2', 3, 0)
+
+        c1._outputs = [(a, 0), (a, 1), (a, 2)]
+        c2._inputs = [(b, 0), (c, 0), (d, 0)]
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
+        self.assertEqual([(a, 0)], b._input_bits)
+        self.assertEqual([(a, 1)], c._input_bits)
+        self.assertEqual([(a, 2)], d._input_bits)
+
+    def test_many_to_one(self):
+        a = base.ComponentBase('a', 3, 0)
+        b = base.ComponentBase('b', 0, 1)
+        c = base.ComponentBase('c', 0, 1)
+        d = base.ComponentBase('d', 0, 1)
+
+        c1 = circuit.Circuit('c1', 0, 3)
+        c2 = circuit.Circuit('c2', 3, 0)
+
+        c1._outputs = [(b, 0), (c, 0), (d, 0)]
+        c2._inputs = [(a, 0), (a, 1), (a, 2)]
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
+        self.assertEqual([(b, 0), (c, 0), (d, 0)], a._input_bits)
+
+    def test_many_to_many(self):
+        a = base.ComponentBase('a', 0, 2)
+        b = base.ComponentBase('b', 0, 2)
+        c = base.ComponentBase('c', 2, 0)
+        d = base.ComponentBase('d', 2, 0)
+
+        c1 = circuit.Circuit('c1', 0, 4)
+        c2 = circuit.Circuit('c2', 4, 0)
+
+        c1._outputs = [(a, 0), (b, 0), (a, 1), (b, 1)]
+        c2._inputs = [(c, 0), (d, 0), (c, 1), (d, 1)]
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2, 3: 3})
+        self.assertEqual([(a, 0), (a, 1)], c._input_bits)
+        self.assertEqual([(b, 0), (b, 1)], d._input_bits)
