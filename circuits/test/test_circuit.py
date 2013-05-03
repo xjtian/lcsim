@@ -14,11 +14,13 @@ class TestCircuit(unittest.TestCase):
         self.assertEqual([None, None, None], c._outputs)
 
     def test_add_input_component(self):
-        a = base.ComponentBase('gate', 2, 0)
+        a = base.ComponentBase('gate', 3, 0)
         c = circuit.Circuit('circuit', 2, 0)
 
         c.add_input_component(a, {0: 0, 1: 1})
-        self.assertEqual([[(a, 0)], [(a, 1)]], c._inputs)
+        # Now try wiring the same input space to multiple gate inputs
+        c.add_input_component(a, {0: 2})
+        self.assertEqual([[(a, 0), (a, 2)], [(a, 1)]], c._inputs)
 
         c = circuit.Circuit('circuit', 2, 0)
         self.assertRaises(ValueError, c.add_input_component, a, {-1: 0})
