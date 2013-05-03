@@ -53,10 +53,10 @@ class Circuit(object):
         """
         self.name = name
 
-        # Each index represents an input space, and contains a tuple
-        # (Component, int) with the Component and its input bit number that
-        # corresponds to this input space.
-        self._inputs = [None] * input_size
+        # Each index represents an input space, and contains a list of tuples
+        # (Component, int) representing which components on which specific
+        # input bits are connected to this input space.
+        self._inputs = [[] for _ in xrange(0, input_size)]
 
         # Each index represents an output space, and contains a tuple
         # (Component, int) with the Component and its output bit number that
@@ -111,8 +111,6 @@ class Circuit(object):
             if yes_input:
                 if k >= len(self._inputs):
                     raise ValueError('Invalid input space index %d.' % k)
-                if self._inputs[k] is not None:
-                    raise ValueError('Circuit input space already taken.')
                 if v >= len(component._input_bits):
                     raise ValueError('Invalid component input index %d' % v)
             else:
@@ -125,7 +123,7 @@ class Circuit(object):
 
         for k, v in mapping.iteritems():
             if yes_input:
-                self._inputs[k] = (component, v)
+                self._inputs[k].append((component, v))
             else:
                 self._outputs[k] = (component, v)
 
@@ -214,11 +212,15 @@ def connect_circuits(out_circuit, in_circuit, mapping):
             raise ValueError('Invalid input bit number %d: not '
                              'addressable.' % i)
 
+    if None in out_circuit._outputs:
+        raise ValueError('Output circuit is incomplete.')
+
     for k, v in mapping.iteritems():
         (com_out, i) = out_circuit._outputs[k]
-        (com_in, j) = in_circuit._inputs[v]
+        in_list = in_circuit._inputs[v]
 
-        com_in.add_input(com_out, {i: j})
+        for (com_in, j) in in_list:
+            com_in.add_input(com_out, {i: j})
 
 
 def stack_circuits(name, c1, c2):
