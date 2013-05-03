@@ -10,7 +10,7 @@ class TestCircuit(unittest.TestCase):
         c = circuit.Circuit('name', 5, 3)
 
         self.assertEqual('name', c.name)
-        self.assertEqual([None, None, None, None, None], c._inputs)
+        self.assertEqual([[], [], [], [], []], c._inputs)
         self.assertEqual([None, None, None], c._outputs)
 
     def test_add_input_component(self):
@@ -18,7 +18,7 @@ class TestCircuit(unittest.TestCase):
         c = circuit.Circuit('circuit', 2, 0)
 
         c.add_input_component(a, {0: 0, 1: 1})
-        self.assertEqual([(a, 0), (a, 1)], c._inputs)
+        self.assertEqual([[(a, 0)], [(a, 1)]], c._inputs)
 
         c = circuit.Circuit('circuit', 2, 0)
         self.assertRaises(ValueError, c.add_input_component, a, {-1: 0})
@@ -49,7 +49,7 @@ class TestConnectCircuits(unittest.TestCase):
         c2 = circuit.Circuit('c2', 2, 0)
 
         c1._outputs = [(a, 0), (b, 0)]
-        c2._inputs = [(c, 0), (d, 0)]
+        c2._inputs = [[(c, 0)], [(d, 0)]]
 
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1})
         self.assertEqual([(a, 0)], c._input_bits)
@@ -65,7 +65,7 @@ class TestConnectCircuits(unittest.TestCase):
         c2 = circuit.Circuit('c2', 3, 0)
 
         c1._outputs = [(a, 0), (a, 1), (a, 2)]
-        c2._inputs = [(b, 0), (c, 0), (d, 0)]
+        c2._inputs = [[(b, 0)], [(c, 0)], [(d, 0)]]
 
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
         self.assertEqual([(a, 0)], b._input_bits)
@@ -82,7 +82,7 @@ class TestConnectCircuits(unittest.TestCase):
         c2 = circuit.Circuit('c2', 3, 0)
 
         c1._outputs = [(b, 0), (c, 0), (d, 0)]
-        c2._inputs = [(a, 0), (a, 1), (a, 2)]
+        c2._inputs = [[(a, 0)], [(a, 1)], [(a, 2)]]
 
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
         self.assertEqual([(b, 0), (c, 0), (d, 0)], a._input_bits)
@@ -97,7 +97,7 @@ class TestConnectCircuits(unittest.TestCase):
         c2 = circuit.Circuit('c2', 4, 0)
 
         c1._outputs = [(a, 0), (b, 0), (a, 1), (b, 1)]
-        c2._inputs = [(c, 0), (d, 0), (c, 1), (d, 1)]
+        c2._inputs = [[(c, 0)], [(d, 0)], [(c, 1)], [(d, 1)]]
 
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2, 3: 3})
         self.assertEqual([(a, 0), (a, 1)], c._input_bits)
