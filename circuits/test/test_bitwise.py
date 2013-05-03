@@ -86,3 +86,25 @@ class TestBitwiseXor(unittest.TestCase):
 
                     result = int(''.join(map(str, c.evaluate())), 2)
                     self.assertEqual(n1 ^ n2, result)
+
+
+class TestBitwiseNot(unittest.TestCase):
+    def test_function(self):
+        # Test all possible operations up to 8 bits
+        for l in xrange(2, 9):
+            space = [[0, 1] for _ in xrange(0, l)]
+            it1 = itertools.product(*space)
+
+            for x in it1:
+                c = bitwise.bitwise_not_circuit(l)
+                s = sources.DigitalArbitrary(x)
+
+                n = int(''.join(map(lambda y: '0' if y else '1', x)), 2)
+
+                source_c = circuit.Circuit('src', 0, l)
+                source_c.add_output_component(s, {i: i for i in xrange(0, l)})
+                circuit.connect_circuits(source_c, c,
+                                         {i: i for i in xrange(0, l)})
+
+                result = int(''.join(map(str, c.evaluate())), 2)
+                self.assertEqual(n, result)

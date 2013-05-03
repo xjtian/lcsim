@@ -13,7 +13,7 @@ def bitwise_and_circuit(bits):
     Parameters:
         bits:
             The number of bits expected for each input argument. The size of
-            the input space of the circuit is 2*bits and the sie of the
+            the input space of the circuit is 2*bits and the size of the
             output space is bits.
 
     Returns:
@@ -51,7 +51,7 @@ def bitwise_or_circuit(bits):
     Parameters:
         bits:
             The number of bits expected for each input argument. The size of
-            the input space of the circuit is 2*bits and the sie of the
+            the input space of the circuit is 2*bits and the size of the
             output space is bits.
 
     Returns:
@@ -89,7 +89,7 @@ def bitwise_xor_circuit(bits):
     Parameters:
         bits:
             The number of bits expected for each input argument. The size of
-            the input space of the circuit is 2*bits and the sie of the
+            the input space of the circuit is 2*bits and the size of the
             output space is bits.
 
     Returns:
@@ -113,6 +113,39 @@ def bitwise_xor_circuit(bits):
         result.add_input_component(comps[i], {i: 0})
         result.add_input_component(comps[i], {i + bits: 1})
 
+        result.add_output_component(comps[i], {i: 0})
+
+    return result
+
+
+def bitwise_not_circuit(bits):
+    """
+    Create a circuit to compute the bitwise inverse of the input.
+
+    Parameters:
+        bits:
+            The number of bits expected for each input argument,
+            which determines the size of the input and output space.
+
+    Returns:
+        Bitwise NOT circuit for specified input size.
+
+    Example usage:
+        >>> from components import sources
+        >>> from circuits import circuit
+        >>> s = sources.DigitalArbitrary([0, 1, 1, 0])
+        >>> c = circuit.Circuit('in1', 0, 4)
+        >>> c.add_output_component(s, {i: i for i in xrange(0, 4)})
+        >>> not_c = bitwise_not_circuit(4)
+        >>> circuit.connect_circuits(c, not_c, {i: i for i in xrange(0, 4)})
+        >>> not_c.evaluate()
+        [1, 0, 0, 1]
+    """
+    result = circuit.Circuit('bNOT', bits, bits)
+    comps = [gates.NOTGate() for _ in xrange(0, bits)]
+
+    for i in xrange(0, bits):
+        result.add_input_component(comps[i], {i: 0})
         result.add_output_component(comps[i], {i: 0})
 
     return result
