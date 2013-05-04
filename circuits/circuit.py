@@ -148,7 +148,7 @@ class Circuit(object):
             InvalidCircuitException if there are any unspecified input or
             output spaces.
         """
-        if None in self._inputs:
+        if [] in self._inputs:
             raise InvalidCircuitException('Circuit inputs not fully '
                                           'specified')
         if None in self._outputs:
