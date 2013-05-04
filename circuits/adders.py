@@ -61,25 +61,62 @@ def full_adder_circuit():
 
 def ripple_adder_no_carry(bits):
     """
-    Create a ripple-carry adder without carry (equivalent to a mod-adder).
+    Create a ripple-carry adder without carry output (equivalent to addition
+    mod 2^bits). When using the circuit, stack the inputs. E.g. for a 4-bit
+    adder, the input space should be A0-A1-A2-A3-B0-B1-B2-B3.
+
+    Parameters:
+        bits:
+            Size of inputs in bits the adder is intended to take.
+
+    Returns:
+        An n-bit ripple-carry adder with the final carry bit dropped.
+
+    Example usage:
+        >>> from components import sources
+        >>> from circuits import circuit
+        >>> s = sources.DigitalArbitrary([1, 1, 0, 0, 0, 1, 1, 0])
+        >>> src = circuit.Circuit('src', 0, 8)
+        >>> src.add_output_component(s, {i: i for i in xrange(0, 8)})
+        >>> adder = ripple_adder_no_carry(4)
+        >>> circuit.connect_circuits(src, adder, {i: i for i in xrange(0, 8)})
+        >>> adder.evaluate()
+        [0, 0, 1, 0]
     """
     result = circuit.Circuit('%dAdd' % bits, 2 * bits, bits)
     full_adds = [__full_adder_components() for _ in xrange(0, bits)]
 
-    for i, xors, ands, ors in enumerate(full_adds):
-        if i < bits:
-            # First connect the carry bit from this adder to Cin of next adder
-            (next_xors, next_ands, _) = full_adds[i + 1]
-            # Carry bit is the result of the OR gate
-            next_xors[1].add_input(ors[0], {0: 1})
-            next_ands[0].add_input(ors[0], {0: 1})
+    for i in xrange(bits - 1, -1, -1):
+        if i < bits - 1:
+            xors, ands, ors = full_adds[i]
+            if i > 0:
+                # Connect the carry bit from this adder to Cin of next
+                (next_xors, next_ands, _) = full_adds[i - 1]
+                # Carry bit is the result of the OR gate
+                next_xors[1].add_input(ors[0], {0: 1})
+                next_ands[0].add_input(ors[0], {0: 1})
 
-        # Now connect the circuit inputs for this bit addition
-        # Remember inputs are stacked so A is i, B is 2 * i
-        result.add_input_component(xors[0], {i: 0, 2 * i: 1})
-        result.add_input_component(ands[1], {i: 0, 2 * i: 1})
+            # Now connect the circuit inputs for this bit addition
+            # Remember inputs are stacked so A is i, B is i + bits
+            result.add_input_component(xors[0], {i: 0, i + bits: 1})
+            result.add_input_component(ands[1], {i: 0, i + bits: 1})
 
-        # Now set the output sum bit, result of the second XOR gate
-        result.add_output_component(xors[1], {i: 0})
+            # Now set the output sum bit, result of the second XOR gate
+            result.add_output_component(xors[1], {i: 0})
+        else:
+            # Since Cin is always 0 (off), use a half-adder for the first
+            # circuit
+            xor_g = gates.XORGate()
+            and_g = gates.ANDGate()
+
+            result.add_input_component(xor_g, {i: 0, i + bits: 1})
+            result.add_input_component(and_g, {i: 0, i + bits: 1})
+
+            result.add_output_component(xor_g, {i: 0})
+            if bits > 1:
+                # Connect carry bit the the next full adder
+                (next_xors, next_ands, _) = full_adds[i - 1]
+                next_xors[1].add_input(xor_g, {0: 1})
+                next_ands[0].add_input(and_g, {0: 1})
 
     return result
