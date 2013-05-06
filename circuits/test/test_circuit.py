@@ -1,147 +1,138 @@
 __author__ = 'Jacky'
 
 import unittest
-
 from circuits import circuit
-from components import gates, sources
+from components import base
 
 
 class TestCircuit(unittest.TestCase):
     def test_constructor(self):
-        c = circuit.Circuit('circuit', [], [])
-        self.assertEqual('circuit', c.name)
-        self.assertEqual(0, c.input_size)
-        self.assertEqual(0, c.output_size)
+        c = circuit.Circuit('name', 5, 3)
 
-        self.assertEqual([], c.inputs)
-        self.assertEqual([], c.outputs)
+        self.assertEqual('name', c.name)
+        self.assertEqual([[], [], [], [], []], c._inputs)
+        self.assertEqual([None, None, None], c._outputs)
 
-        a = gates.ANDGate()
-        b = gates.ORGate()
-        c = circuit.Circuit('circuit', [a], [b])
+    def test_add_input_component(self):
+        a = base.ComponentBase('gate', 3, 0)
+        c = circuit.Circuit('circuit', 2, 0)
 
-        self.assertEqual('circuit', c.name)
-        self.assertEqual(2, c.input_size)
-        self.assertEqual(1, c.output_size)
+        c.add_input_component(a, {0: 0, 1: 1})
+        # Now try wiring the same input space to multiple gate inputs
+        c.add_input_component(a, {0: 2})
+        self.assertEqual([[(a, 0), (a, 2)], [(a, 1)]], c._inputs)
 
-        self.assertEqual([a], c.inputs)
-        self.assertEqual([b], c.outputs)
+        c = circuit.Circuit('circuit', 2, 0)
+        self.assertRaises(ValueError, c.add_input_component, a, {-1: 0})
+        self.assertRaises(ValueError, c.add_input_component, a, {3: 0})
+        self.assertRaises(ValueError, c.add_input_component, a, {0: 4})
 
-    def test_append_input(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
+    def test_add_output_component(self):
+        a = base.ComponentBase('gate', 0, 2)
+        c = circuit.Circuit('circuit', 0, 2)
 
-        c = circuit.Circuit('circuit', [a], [])
-        c.append_input(b)
+        c.add_output_component(a, {0: 0, 1: 1})
+        self.assertEqual([(a, 0), (a, 1)], c._outputs)
 
-        self.assertEqual(4, c.input_size)
-        self.assertEqual(0, c.output_size)
-
-        self.assertEqual([a, b], c.inputs)
-        self.assertEqual([], c.outputs)
-
-    def test_prepend_input(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
-
-        c = circuit.Circuit('circuit', [a], [])
-        c.prepend_input(b)
-
-        self.assertEqual(4, c.input_size)
-        self.assertEqual(0, c.output_size)
-
-        self.assertEqual([b, a], c.inputs)
-        self.assertEqual([], c.outputs)
-
-    def test_append_output(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
-
-        c = circuit.Circuit('circuit', [], [a])
-        c.append_output(b)
-
-        self.assertEqual(0, c.input_size)
-        self.assertEqual(2, c.output_size)
-
-        self.assertEqual([a, b], c.outputs)
-        self.assertEqual([], c.inputs)
-
-    def test_prepend_output(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
-
-        c = circuit.Circuit('circuit', [], [a])
-        c.prepend_output(b)
-
-        self.assertEqual(0, c.input_size)
-        self.assertEqual(2, c.output_size)
-
-        self.assertEqual([b, a], c.outputs)
-        self.assertEqual([], c.inputs)
-
-    def test_evaluate(self):
-        # Try a semi-complex circuit (full-adder)
-        xor1 = gates.XORGate()
-        xor2 = gates.XORGate()
-        and1 = gates.ANDGate()
-        and2 = gates.ANDGate()
-        or1 = gates.ORGate()
-        s = sources.DigitalArbitrary([1, 1, 0])
-
-        xor1.add_input(s, {0: 0, 1: 1})
-        xor2.add_input(xor1, {0: 0})
-        xor2.add_input(s, {2: 1})
-        and1.add_input(xor1, {0: 0})
-        and1.add_input(s, {2: 1})
-        and2.add_input(s, {0: 0, 1: 1})
-        or1.add_input(and1, {0: 0})
-        or1.add_input(and2, {0: 1})
-
-        c = circuit.Circuit('full_adder', [s], [xor2, or1])
-        self.assertEqual([0, 1], c.evaluate())
+        c = circuit.Circuit('circuit', 0, 2)
+        self.assertRaises(ValueError, c.add_output_component, a, {-1: 0})
+        self.assertRaises(ValueError, c.add_output_component, a, {3: 0})
+        self.assertRaises(ValueError, c.add_output_component, a, {0: 4})
 
 
-class TestCircuitFunctions(unittest.TestCase):
-    def test_connect_circuits(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
-        c = gates.XORGate()
+class TestConnectCircuits(unittest.TestCase):
+    def test_one_to_one(self):
+        a = base.ComponentBase('a', 0, 1)
+        b = base.ComponentBase('b', 0, 1)
+        c = base.ComponentBase('c', 1, 0)
+        d = base.ComponentBase('d', 1, 0)
 
-        c1 = circuit.Circuit('test1', [a, b], [a, b])
-        c2 = circuit.Circuit('test2', [c], [c])
+        c1 = circuit.Circuit('c1', 0, 2)
+        c2 = circuit.Circuit('c2', 2, 0)
+
+        c1._outputs = [(a, 0), (b, 0)]
+        c2._inputs = [[(c, 0)], [(d, 0)]]
 
         circuit.connect_circuits(c1, c2, {0: 0, 1: 1})
+        self.assertEqual([(a, 0)], c._input_bits)
+        self.assertEqual([(b, 0)], d._input_bits)
 
-        self.assertEqual([(a, 0), (b, 0)], c._input_bits)
+    def test_one_to_many(self):
+        a = base.ComponentBase('a', 0, 3)
+        b = base.ComponentBase('b', 1, 0)
+        c = base.ComponentBase('c', 1, 0)
+        d = base.ComponentBase('d', 1, 0)
 
-    def test_stack_circuits(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
+        c1 = circuit.Circuit('c1', 0, 3)
+        c2 = circuit.Circuit('c2', 3, 0)
 
-        c1 = circuit.Circuit('test1', [a], [a])
-        c2 = circuit.Circuit('test2', [b], [b])
+        c1._outputs = [(a, 0), (a, 1), (a, 2)]
+        c2._inputs = [[(b, 0)], [(c, 0)], [(d, 0)]]
 
-        c3 = circuit.stack_circuits('test3', c1, c2)
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
+        self.assertEqual([(a, 0)], b._input_bits)
+        self.assertEqual([(a, 1)], c._input_bits)
+        self.assertEqual([(a, 2)], d._input_bits)
 
-        self.assertEqual('test3', c3.name)
-        self.assertEqual([a, b], c3.inputs)
-        self.assertEqual([a, b], c3.outputs)
+    def test_many_to_one(self):
+        a = base.ComponentBase('a', 3, 0)
+        b = base.ComponentBase('b', 0, 1)
+        c = base.ComponentBase('c', 0, 1)
+        d = base.ComponentBase('d', 0, 1)
 
-        self.assertEqual(4, c3.input_size)
-        self.assertEqual(2, c3.output_size)
+        c1 = circuit.Circuit('c1', 0, 3)
+        c2 = circuit.Circuit('c2', 3, 0)
 
-    def test_merge_circuits(self):
-        a = gates.ANDGate()
-        b = gates.ORGate()
-        c = gates.XORGate()
+        c1._outputs = [(b, 0), (c, 0), (d, 0)]
+        c2._inputs = [[(a, 0)], [(a, 1)], [(a, 2)]]
 
-        c1 = circuit.Circuit('test1', [a, b], [a, b])
-        c2 = circuit.Circuit('test2', [c], [c])
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2})
+        self.assertEqual([(b, 0), (c, 0), (d, 0)], a._input_bits)
 
-        c3 = circuit.merge_circuits('test3', c1, c2)
+    def test_many_to_many(self):
+        a = base.ComponentBase('a', 0, 2)
+        b = base.ComponentBase('b', 0, 2)
+        c = base.ComponentBase('c', 2, 0)
+        d = base.ComponentBase('d', 2, 0)
 
-        self.assertEqual([a, b], c3.inputs)
-        self.assertEqual([c], c3.outputs)
+        c1 = circuit.Circuit('c1', 0, 4)
+        c2 = circuit.Circuit('c2', 4, 0)
 
-        self.assertEqual(4, c3.input_size)
-        self.assertEqual(1, c3.output_size)
+        c1._outputs = [(a, 0), (b, 0), (a, 1), (b, 1)]
+        c2._inputs = [[(c, 0)], [(d, 0)], [(c, 1)], [(d, 1)]]
+
+        circuit.connect_circuits(c1, c2, {0: 0, 1: 1, 2: 2, 3: 3})
+        self.assertEqual([(a, 0), (a, 1)], c._input_bits)
+        self.assertEqual([(b, 0), (b, 1)], d._input_bits)
+
+
+class TestStackCircuits(unittest.TestCase):
+    def test_function(self):
+        c1 = circuit.Circuit('top', 2, 1)
+        c2 = circuit.Circuit('bottom', 2, 1)
+
+        c1._inputs = [1, 2]
+        c1._outputs = [3]
+        c2._inputs = [4, 5]
+        c2._outputs = [6]
+
+        c3 = circuit.stack_circuits('stacked', c1, c2)
+        self.assertEqual('stacked', c3.name)
+        self.assertEqual([1, 2, 4, 5], c3._inputs)
+        self.assertEqual([3, 6], c3._outputs)
+
+
+class TestMergeCircuits(unittest.TestCase):
+    def test_function(self):
+        c1 = circuit.Circuit('left', 2, 1)
+        c2 = circuit.Circuit('right', 1, 2)
+
+        c1._inputs = [1, 2]
+        c1._outputs = [3]
+        c2._inputs = [4]
+        c2._outputs = [5, 6]
+
+        c3 = circuit.merge_circuits('merged', c1, c2)
+        self.assertEqual('merged', c3.name)
+        self.assertEqual([1, 2], c3._inputs)
+        self.assertEqual([5, 6], c3._outputs)
