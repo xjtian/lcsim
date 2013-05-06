@@ -22,7 +22,6 @@ def digital_source_circuit(output):
     Raises:
         ValueError if any values in 'output' parameter are not 1 or 0.
 
-
     Example usage:
         >>> c = digital_source_circuit([0, 1, 1, 0])
         >>> c.evaluate()
