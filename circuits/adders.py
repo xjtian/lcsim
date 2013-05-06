@@ -116,7 +116,7 @@ def ripple_adder_no_carry(bits):
             if bits > 1:
                 # Connect carry bit the the next full adder
                 (next_xors, next_ands, _) = full_adds[i - 1]
-                next_xors[1].add_input(xor_g, {0: 1})
+                next_xors[1].add_input(and_g, {0: 1})
                 next_ands[0].add_input(and_g, {0: 1})
 
     return result
