@@ -39,7 +39,7 @@ an equivalent circuit should exist as well.
 
 Circuits are meant to be built modularly from other circuits. Consider the
 following circuit that, given an input of 3 4-bit integers A,B, and C,
-outputs `((A + B) leftrotate 2) xor C`
+outputs `((A + B) leftrotate 2) xor C` (with addition mod 2^4).
 
     from circuits import sources, shifters, adders, bitwise, circuit
 
