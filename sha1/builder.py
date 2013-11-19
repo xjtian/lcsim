@@ -58,64 +58,64 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
         if 0 <= i <= 19:
             # f = (b and c) or ((not b) and d)
             b_and_c = bitwise_and_circuit(32)
-            b_and_c.add_input_component(b, {x: x for x in xrange(0, 32)})
-            b_and_c.add_input_component(c, {x: x for x in xrange(32, 64)})
+            connect_circuits(b, b_and_c, {x: x for x in xrange(0, 32)})
+            connect_circuits(c, b_and_c, {x: x + 32 for x in xrange(0, 32)})
 
             not_b = bitwise_not_circuit(32)
-            not_b.add_input_component(b, {x: x for x in xrange(0, 32)})
+            connect_circuits(b, not_b, {x: x for x in xrange(0, 32)})
 
             not_b_and_d = bitwise_and_circuit(32)
-            not_b_and_d.add_input_component(not_b, {x: x for x in xrange(0, 32)})
-            not_b_and_d.add_input_component(d, {x: x for x in xrange(32, 64)})
+            connect_circuits(not_b, not_b_and_d, {x: x for x in xrange(0, 32)})
+            connect_circuits(d, not_b_and_d, {x: x + 32 for x in xrange(0, 32)})
 
             f = bitwise_or_circuit(32)
-            f.add_input_component(b_and_c, {x: x for x in xrange(0, 32)})
-            f.add_input_component(not_b_and_d, {x: x for x in xrange(32, 64)})
+            connect_circuits(b_and_c, f, {x: x for x in xrange(0, 32)})
+            connect_circuits(not_b_and_d, f, {x: x + 32 for x in xrange(0, 32)})
 
             k = digital_source_int_circuit(0x6ED9EBA1, 32)
         elif 20 <= i <= 39:
             # f = b xor c xor d
             b_xor_c = bitwise_xor_circuit(32)
-            b_xor_c.add_input_component(b, {x: x for x in xrange(0, 32)})
-            b_xor_c.add_input_component(c, {x: x for x in xrange(32, 64)})
+            connect_circuits(b, b_xor_c, {x: x for x in xrange(0, 32)})
+            connect_circuits(c, b_xor_c, {x: x + 32 for x in xrange(0, 32)})
 
             f = bitwise_xor_circuit(32)
-            f.add_input_component(b_xor_c, {x: x for x in xrange(0, 32)})
-            f.add_input_component(d, {x: x for x in xrange(32, 64)})
+            connect_circuits(b_xor_c, f, {x: x for x in xrange(0, 32)})
+            connect_circuits(d, f, {x: x + 32 for x in xrange(0, 32)})
 
             k = digital_source_int_circuit(0x6ED9EBA1, 32)
         elif 40 <= i <= 59:
             # f = (b and c) or (b and d) or (c and d)
             b_and_c = bitwise_and_circuit(32)
-            b_and_c.add_input_component(b, {x: x for x in xrange(0, 32)})
-            b_and_c.add_input_component(c, {x: x for x in xrange(32, 64)})
+            connect_circuits(b, b_and_c, {x: x for x in xrange(0, 32)})
+            connect_circuits(c, b_and_c, {x: x + 32 for x in xrange(0, 32)})
 
             b_and_d = bitwise_and_circuit(32)
-            b_and_d.add_input_component(b, {x: x for x in xrange(0, 32)})
-            b_and_d.add_input_component(d, {x: x for x in xrange(32, 64)})
+            connect_circuits(b, b_and_d, {x: x for x in xrange(0, 32)})
+            connect_circuits(d, b_and_d, {x: x + 32 for x in xrange(0, 32)})
 
             c_and_d = bitwise_and_circuit(32)
-            c_and_d.add_input_component(c, {x: x for x in xrange(0, 32)})
-            c_and_d.add_input_component(d, {x: x for x in xrange(32, 64)})
+            connect_circuits(c, c_and_d, {x: x for x in xrange(0, 32)})
+            connect_circuits(d, c_and_d, {x: x + 32 for x in xrange(0, 32)})
 
             bnc_or_bnd = bitwise_or_circuit(32)
-            bnc_or_bnd.add_input_component(b_and_c, {x: x for x in xrange(0, 32)})
-            bnc_or_bnd.add_input_component(b_and_d, {x: x for x in xrange(32, 64)})
+            connect_circuits(b_and_c, bnc_or_bnd, {x: x for x in xrange(0, 32)})
+            connect_circuits(b_and_d, bnc_or_bnd, {x: x + 32 for x in xrange(0, 32)})
 
             f = bitwise_or_circuit(32)
-            f.add_input_component(bnc_or_bnd, {x: x for x in xrange(0, 32)})
-            f.add_input_component(c_and_d, {x: x for x in xrange(32, 64)})
+            connect_circuits(bnc_or_bnd, f, {x: x for x in xrange(0, 32)})
+            connect_circuits(c_and_d, f, {x: x + 32 for x in xrange(0, 32)})
 
             k = digital_source_int_circuit(0x8F1BBCDC, 32)
         elif 60 <= i <= 79:
             # f = b xor c xor d
             b_xor_c = bitwise_xor_circuit(32)
-            b_xor_c.add_input_component(b, {x: x for x in xrange(0, 32)})
-            b_xor_c.add_input_component(c, {x: x for x in xrange(32, 64)})
+            connect_circuits(b, b_xor_c, {x: x for x in xrange(0, 32)})
+            connect_circuits(c, b_xor_c, {x: x + 32 for x in xrange(0, 32)})
 
             f = bitwise_xor_circuit(32)
-            f.add_input_component(b_xor_c, {x: x for x in xrange(0, 32)})
-            f.add_input_component(d, {x: x for x in xrange(32, 64)})
+            connect_circuits(b_xor_c, f, {x: x for x in xrange(0, 32)})
+            connect_circuits(d, f, {x: x + 32 for x in xrange(0, 32)})
 
             k = digital_source_int_circuit(0xCA62C1D6, 32)
         else:
@@ -124,8 +124,8 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
         # (a leftrotate 5) + f
         temp = ripple_adder_no_carry(32)
         connect_circuits(a, temp, {x: x - 27 for x in xrange(27, 32)})
-        connect_circuits(a, temp, {x: x for x in xrange(0, 27)})
-        connect_circuits(f, temp, {x: x for x in xrange(0, 32)})
+        connect_circuits(a, temp, {x: x + 5 for x in xrange(0, 27)})
+        connect_circuits(f, temp, {x: x + 32 for x in xrange(0, 32)})
 
         # result + e
         temp2 = ripple_adder_no_carry(32)
