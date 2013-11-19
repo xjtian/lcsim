@@ -123,8 +123,8 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
         # (a leftrotate 5) + f
         temp = ripple_adder_no_carry(32)
-        connect_circuits(a, temp, {x: x - 27 for x in xrange(27, 32)})
-        connect_circuits(a, temp, {x: x + 5 for x in xrange(0, 27)})
+        connect_circuits(a, temp, {x: x - 5 for x in xrange(5, 32)})
+        connect_circuits(a, temp, {x: x + 27 for x in xrange(0, 5)})
         connect_circuits(f, temp, {x: x + 32 for x in xrange(0, 32)})
 
         # result + e
