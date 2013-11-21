@@ -4,8 +4,78 @@ import sys
 from sha1.builder import *
 
 
+def chunk_words(chunk):
+    w = [-1] * 80
+    for i in xrange(0, 16):
+        w[i] = (chunk >> 32 * (15 - i)) & 0xFFFFFFFF
+    for i in xrange(16, 80):
+        w[i] = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]
+        w[i] = ((w[i] << 1) % (1 << 32) | (w[i] >> 31))
+
+    return w
+
+
+def sha1_block(chunk):
+    h0 = 0x67452301
+    h1 = 0xEFCDAB89
+    h2 = 0x98BADCFE
+    h3 = 0x10325476
+    h4 = 0xC3D2E1F0
+
+    w = chunk_words(chunk)
+
+    a, b, c, d, e = h0, h1, h2, h3, h4
+    f, k = None, None
+    for i in xrange(0, 79):
+        #print 'At iteration %d' % i
+        #print 'a = %x' % a
+        #print 'b = %x' % b
+        #print 'c = %x' % c
+        #print 'd = %x' % d
+        #print 'e = %x' % e
+
+        if 0 <= i <= 19:
+            f = (b & c) | ((~b) & d)
+            k = 0x5A827999
+        elif 20 <= i <= 39:
+            f = b ^ c ^ d
+            k = 0x6ED9EBA1
+        elif 40 <= i <= 59:
+            f = (b & c) | (b & d) | (c & d)
+            k = 0x8F1BBCDC
+        elif 60 <= i <= 79:
+            f = b ^ c ^ d
+            k = 0xCA62C1D6
+
+        temp = ((a << 5) % (1 << 32) | a >> 27)
+        if i == 0:
+            print 'CODE'
+            print 'a leftrotate 5 = %x' % temp
+        temp = (temp + f) % (1 << 32)
+        if i == 0:
+            print 'f = %x' % f
+            print '(a leftrotate 5) + f = %x' % temp
+
+        temp = (temp + e) % (1 << 32)
+        temp = (temp + k) % (1 << 32)
+        temp = (temp + w[i]) % (1 << 32)
+
+        e = d
+        d = c
+        c = ((b << 30) % (1 << 32) | b >> 2)
+        b = a
+        a = temp
+
+    eh0 = (h0 + a) % (1 << 32)
+    eh1 = (h1 + b) % (1 << 32)
+    eh2 = (h2 + c) % (1 << 32)
+    eh3 = (h3 + d) % (1 << 32)
+    eh4 = (h4 + e) % (1 << 32)
+
+    return eh0, eh1, eh2, eh3, eh4
+
+
 class TestBlockOperation(unittest.TestCase):
-    @unittest.skip('Skip for now')
     def test_function(self):
         sys.setrecursionlimit(10000)
         # Each chunk is 512 bits
@@ -27,62 +97,17 @@ class TestBlockOperation(unittest.TestCase):
             return int(''.join(map(str, eval)), 2)
 
         nh = map(eval_to_int, result)
+        eh = sha1_block(chunk)
 
         # Now run the same algorithm without circuits
-        h0 = 0x67452301
-        h1 = 0xEFCDAB89
-        h2 = 0x98BADCFE
-        h3 = 0x10325476
-        h4 = 0xC3D2E1F0
-
-        # Split into words
-        w = [-1] * 80
-        for i in xrange(15, -1, -1):
-            w[15 - i] = ((chunk >> (i * 32))) & 0xFFFFFFFF
-
-        for i in xrange(16, 80):
-            t = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]
-            w[i] = (t << 1 | t >> 31)
-
-        a, b, c, d, e = h0, h1, h2, h3, h4
-        for i in xrange(0, 79):
-            if 0 <= i <= 19:
-                f = (b & c) | ((~b) & d)
-                k = 0x5A827999
-            elif 20 <= i <= 39:
-                f = b ^ c ^ d
-                k = 0x6ED9EBA1
-            elif 40 <= i <= 59:
-                f = (b & c) | (b & d) | (c & d)
-                k = 0x8F1BBCDC
-            elif 60 <= i <= 79:
-                f = b ^ c ^ d
-                k = 0xCA62C1D6
-
-            temp = ((a << 5 | a >> 27) + f) % 0xFFFFFFFF
-            temp = (temp + e) % 0xFFFFFFFF
-            temp = (temp + k) % 0xFFFFFFFF
-            temp = (temp + w[i]) % 0xFFFFFFFF
-
-            e = d
-            d = c
-            c = (b << 32 | b >> 2)
-            b = a
-            a = temp
-
-        eh0 = (h0 + a) % 0xFFFFFFFF
-        eh1 = (h1 + b) % 0xFFFFFFFF
-        eh2 = (h2 + c) % 0xFFFFFFFF
-        eh3 = (h3 + d) % 0xFFFFFFFF
-        eh4 = (h4 + e) % 0xFFFFFFFF
-
-        print 'Actual from circuit:'
-        for h in nh:
-            print '%x' % h
-
-        print 'From pseudocode:'
-        for h in [eh0, eh1, eh2, eh3, eh4]:
-            print '%x' % h
+        #print 'Actual from circuit:'
+        #for h in nh:
+        #    print '%x' % h
+        #
+        #eh = sha1_block(chunk)
+        #print 'Hash result from pseudocode:'
+        #for h in eh:
+        #    print '%x' % h
 
 
 class TestCreateWords(unittest.TestCase):
@@ -91,6 +116,7 @@ class TestCreateWords(unittest.TestCase):
         chunk_circuit = digital_source_int_circuit(chunk, 512)
 
         w_circs = create_words(chunk_circuit)
+
         def eval_to_int(circ):
             eval = circ[0].evaluate()[circ[1][0]:circ[1][-1] + 1]
             self.assertEqual(32, len(circ[1]))
@@ -98,12 +124,6 @@ class TestCreateWords(unittest.TestCase):
             return int(''.join(map(str, eval)), 2)
 
         res_words = map(eval_to_int, w_circs)
-
-        exp_words = [-1] * 80
-        for i in xrange(0, 16):
-            exp_words[i] = (chunk >> 32 * (15 - i)) & 0xFFFFFFFF
-        for i in xrange(16, 80):
-            exp_words[i] = exp_words[i - 3] ^ exp_words[i - 8] ^ exp_words[i - 14] ^ exp_words[i - 16]
-            exp_words[i] = ((exp_words[i] << 1) % 0xFFFFFFFF | (exp_words[i] >> 31))
+        exp_words = chunk_words(chunk)
 
         self.assertEqual(exp_words, res_words)

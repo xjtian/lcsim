@@ -21,6 +21,13 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
     # Main loop here
     for i in xrange(0, 80):
+        #print 'At iteration %d' % i
+        #print 'a = %x' % int(''.join(map(str, a.evaluate())), 2)
+        #print 'b = %x' % int(''.join(map(str, b.evaluate())), 2)
+        #print 'c = %x' % int(''.join(map(str, c.evaluate())), 2)
+        #print 'd = %x' % int(''.join(map(str, d.evaluate())), 2)
+        #print 'e = %x' % int(''.join(map(str, e.evaluate())), 2)
+
         if 0 <= i <= 19:
             # f = (b and c) or ((not b) and d)
             b_and_c = bitwise_and_circuit(32)
@@ -38,7 +45,7 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
             connect_circuits(b_and_c, f, {x: x for x in xrange(0, 32)})
             connect_circuits(not_b_and_d, f, {x: x + 32 for x in xrange(0, 32)})
 
-            k = digital_source_int_circuit(0x6ED9EBA1, 32)
+            k = digital_source_int_circuit(0x5A827999, 32)
         elif 20 <= i <= 39:
             # f = b xor c xor d
             b_xor_c = bitwise_xor_circuit(32)
@@ -92,6 +99,12 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
         connect_circuits(a, temp, {x: x - 5 for x in xrange(5, 32)})
         connect_circuits(a, temp, {x: x + 27 for x in xrange(0, 5)})
         connect_circuits(f, temp, {x: x + 32 for x in xrange(0, 32)})
+
+        if i == 0:
+            print 'CIRCUIT'
+            print 'a leftrotate 5 = %x' % int(''.join(map(str, a.evaluate()[5:32] + a.evaluate()[:5])), 2)
+            print 'f = %x' % int(''.join(map(str, f.evaluate())), 2)
+            print '(a leftrotate 5) + f = %x' % int(''.join(map(str, temp.evaluate())), 2)
 
         # result + e
         temp2 = ripple_adder_no_carry(32)

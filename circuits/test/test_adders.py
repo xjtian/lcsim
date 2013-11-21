@@ -49,3 +49,25 @@ class TestRippleAdderNoCarry(unittest.TestCase):
                     num = int(''.join(map(str, a.evaluate())), 2)
                     self.assertEqual('%dAdd' % l, a.name)
                     self.assertEqual((n1 + n2) % (2 ** l), num)
+
+    def test_specific(self):
+        a = 0xe8a4602c
+        b = 0x98badcfe
+
+        al = map(int, list(bin(a)[2:]))
+        bl = map(int, list(bin(b)[2:]))
+
+        while len(al) < 32:
+            al.insert(0, 0)
+        while len(bl) < 32:
+            bl.insert(0, 0)
+
+        s = sources.DigitalArbitrary(al + bl)
+        src = circuit.Circuit('src', 0, 64)
+        src.add_output_component(s, {i: i for i in xrange(0, 64)})
+
+        adder = adders.ripple_adder_no_carry(32)
+        circuit.connect_circuits(src, adder, {i: i for i in xrange(0, 64)})
+
+        num = int(''.join(map(str, adder.evaluate())), 2)
+        self.assertEqual((a + b) % (1 << 32), num)
