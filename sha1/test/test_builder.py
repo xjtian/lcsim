@@ -48,13 +48,7 @@ def sha1_block(chunk):
             k = 0xCA62C1D6
 
         temp = ((a << 5) % (1 << 32) | a >> 27)
-        if i == 0:
-            print 'CODE'
-            print 'a leftrotate 5 = %x' % temp
         temp = (temp + f) % (1 << 32)
-        if i == 0:
-            print 'f = %x' % f
-            print '(a leftrotate 5) + f = %x' % temp
 
         temp = (temp + e) % (1 << 32)
         temp = (temp + k) % (1 << 32)
@@ -99,15 +93,15 @@ class TestBlockOperation(unittest.TestCase):
         nh = map(eval_to_int, result)
         eh = sha1_block(chunk)
 
-        # Now run the same algorithm without circuits
-        #print 'Actual from circuit:'
-        #for h in nh:
-        #    print '%x' % h
-        #
-        #eh = sha1_block(chunk)
-        #print 'Hash result from pseudocode:'
-        #for h in eh:
-        #    print '%x' % h
+        #Now run the same algorithm without circuits
+        print 'Actual from circuit:'
+        for h in nh:
+            print '%x' % h
+
+        eh = sha1_block(chunk)
+        print 'Hash result from code:'
+        for h in eh:
+            print '%x' % h
 
 
 class TestCreateWords(unittest.TestCase):

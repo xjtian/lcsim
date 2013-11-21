@@ -100,12 +100,6 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
         connect_circuits(a, temp, {x: x + 27 for x in xrange(0, 5)})
         connect_circuits(f, temp, {x: x + 32 for x in xrange(0, 32)})
 
-        if i == 0:
-            print 'CIRCUIT'
-            print 'a leftrotate 5 = %x' % int(''.join(map(str, a.evaluate()[5:32] + a.evaluate()[:5])), 2)
-            print 'f = %x' % int(''.join(map(str, f.evaluate())), 2)
-            print '(a leftrotate 5) + f = %x' % int(''.join(map(str, temp.evaluate())), 2)
-
         # result + e
         temp2 = ripple_adder_no_carry(32)
         connect_circuits(temp, temp2, {x: x for x in xrange(0, 32)})
