@@ -1,11 +1,11 @@
 import unittest
 import sys
 
-from circuits.sources import digital_source_int_circuit
-from sha1.builder import block_operation
+from sha1.builder import *
 
 
 class TestBlockOperation(unittest.TestCase):
+    @unittest.skip('Skip for now')
     def test_function(self):
         sys.setrecursionlimit(10000)
         # Each chunk is 512 bits
@@ -39,6 +39,10 @@ class TestBlockOperation(unittest.TestCase):
         w = [-1] * 80
         for i in xrange(15, -1, -1):
             w[15 - i] = ((chunk >> (i * 32))) & 0xFFFFFFFF
+
+        for i in xrange(16, 80):
+            t = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]
+            w[i] = (t << 1 | t >> 31)
 
         a, b, c, d, e = h0, h1, h2, h3, h4
         for i in xrange(0, 79):
@@ -79,3 +83,27 @@ class TestBlockOperation(unittest.TestCase):
         print 'From pseudocode:'
         for h in [eh0, eh1, eh2, eh3, eh4]:
             print '%x' % h
+
+
+class TestCreateWords(unittest.TestCase):
+    def test_function(self):
+        chunk = 0x25afbbc1415e115f68b57be44bd10a75f90d7bec20c24bfce34a1a34409b7f9373496da68e4db94e9bc60f07a9d435fe40a8c4cf41b11d5fcc09d11878d653cb
+        chunk_circuit = digital_source_int_circuit(chunk, 512)
+
+        w_circs = create_words(chunk_circuit)
+        def eval_to_int(circ):
+            eval = circ[0].evaluate()[circ[1][0]:circ[1][-1] + 1]
+            self.assertEqual(32, len(circ[1]))
+
+            return int(''.join(map(str, eval)), 2)
+
+        res_words = map(eval_to_int, w_circs)
+
+        exp_words = [-1] * 80
+        for i in xrange(0, 16):
+            exp_words[i] = (chunk >> 32 * (15 - i)) & 0xFFFFFFFF
+        for i in xrange(16, 80):
+            exp_words[i] = exp_words[i - 3] ^ exp_words[i - 8] ^ exp_words[i - 14] ^ exp_words[i - 16]
+            exp_words[i] = ((exp_words[i] << 1) % 0xFFFFFFFF | (exp_words[i] >> 31))
+
+        self.assertEqual(exp_words, res_words)

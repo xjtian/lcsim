@@ -17,41 +17,7 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
     a, b, c, d, e = h0, h1, h2, h3, h4
 
-    w = [None] * 80
-    # Each element is a tuple of a circuit and the range of bits for it
-    # That is a horrendous explanation
-
-    for i in xrange(0, 16):
-        w[i] = (chunk, xrange(i * 32, (i + 1) * 32))
-    for i in xrange(16, 80):
-        # w[i] = (w[i-3] xor w[i-8] xor w[i-14] xor w[i-16]) leftrotate 1
-        xtemp = bitwise_xor_circuit(32)
-
-        connect_circuits(w[i - 3][0], xtemp, {
-            x: y for (x, y) in izip(w[i - 3][1], xrange(0, 32))
-        })
-
-        connect_circuits(w[i - 8][0], xtemp, {
-            x: y for (x, y) in izip(w[i - 8][1], xrange(32, 64))
-        })
-
-        # result xor w[i - 14]
-        xtemp2 = bitwise_xor_circuit(32)
-        connect_circuits(xtemp, xtemp2, {x: x for x in xrange(0, 32)})
-        connect_circuits(w[i - 14][0], xtemp2, {
-            x: y for (x, y) in izip(w[i - 14][1], xrange(32, 64))
-        })
-
-        # result xor w[i - 16]
-        xtemp = bitwise_xor_circuit(32)
-        connect_circuits(xtemp2, xtemp, {x: x for x in xrange(0, 32)})
-        connect_circuits(w[i - 16][0], xtemp, {
-            x: y for (x, y) in izip(w[i - 16][1], xrange(32, 64))
-        })
-
-        # leftrotate 1
-        word = left_rotate(xtemp, 1)
-        w[i] = (word, xrange(0, 32))
+    w = create_words(chunk)
 
     # Main loop here
     for i in xrange(0, 80):
@@ -172,3 +138,42 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
     connect_circuits(e, h4_add, {i: i + 32 for i in xrange(0, 32)})
 
     return h0_add, h1_add, h2_add, h3_add, h4_add
+
+
+def create_words(chunk):
+    w = [None] * 80
+
+    for i in xrange(0, 16):
+        w[i] = (chunk, xrange(i * 32, i * 32 + 32))
+
+    for i in xrange(16, 80):
+        # w[i] = (w[i-3] xor w[i-8] xor w[i-14] xor w[i-16]) leftrotate 1
+        xtemp = bitwise_xor_circuit(32)
+
+        connect_circuits(w[i - 3][0], xtemp, {
+            x: y for (x, y) in izip(w[i - 3][1], xrange(0, 32))
+        })
+
+        connect_circuits(w[i - 8][0], xtemp, {
+            x: y for (x, y) in izip(w[i - 8][1], xrange(32, 64))
+        })
+
+        # result xor w[i - 14]
+        xtemp2 = bitwise_xor_circuit(32)
+        connect_circuits(xtemp, xtemp2, {x: x for x in xrange(0, 32)})
+        connect_circuits(w[i - 14][0], xtemp2, {
+            x: y for (x, y) in izip(w[i - 14][1], xrange(32, 64))
+        })
+
+        # result xor w[i - 16]
+        xtemp = bitwise_xor_circuit(32)
+        connect_circuits(xtemp2, xtemp, {x: x for x in xrange(0, 32)})
+        connect_circuits(w[i - 16][0], xtemp, {
+            x: y for (x, y) in izip(w[i - 16][1], xrange(32, 64))
+        })
+
+        # leftrotate 1
+        word = left_rotate(xtemp, 1)
+        w[i] = (word, xrange(0, 32))
+
+    return w
