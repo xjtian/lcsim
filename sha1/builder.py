@@ -21,13 +21,6 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
     # Main loop here
     for i in xrange(0, 80):
-        #print 'At iteration %d' % i
-        #print 'a = %x' % int(''.join(map(str, a.evaluate())), 2)
-        #print 'b = %x' % int(''.join(map(str, b.evaluate())), 2)
-        #print 'c = %x' % int(''.join(map(str, c.evaluate())), 2)
-        #print 'd = %x' % int(''.join(map(str, d.evaluate())), 2)
-        #print 'e = %x' % int(''.join(map(str, e.evaluate())), 2)
-
         if 0 <= i <= 19:
             # f = (b and c) or ((not b) and d)
             b_and_c = bitwise_and_circuit(32)
@@ -120,7 +113,7 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
         e = d
         d = c
-        c = left_rotate(b, 30)
+        c = left_rotate(b, 30)  # TODO: this line ends up changing h0 and h1 !!!
         b = a
         a = temp
 

@@ -26,14 +26,7 @@ def sha1_block(chunk):
 
     a, b, c, d, e = h0, h1, h2, h3, h4
     f, k = None, None
-    for i in xrange(0, 79):
-        #print 'At iteration %d' % i
-        #print 'a = %x' % a
-        #print 'b = %x' % b
-        #print 'c = %x' % c
-        #print 'd = %x' % d
-        #print 'e = %x' % e
-
+    for i in xrange(0, 80):
         if 0 <= i <= 19:
             f = (b & c) | ((~b) & d)
             k = 0x5A827999
@@ -98,7 +91,6 @@ class TestBlockOperation(unittest.TestCase):
         for h in nh:
             print '%x' % h
 
-        eh = sha1_block(chunk)
         print 'Hash result from code:'
         for h in eh:
             print '%x' % h
