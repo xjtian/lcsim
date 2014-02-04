@@ -8,7 +8,7 @@ def readme_example():
     Code example from the README. ((A+B) leftrotate 2) xor C, 4-bit inputs.
     """
     plus = adders.ripple_adder_no_carry(4)
-    shifters.left_rotate(plus, 2)
+    shifters.left_rotate_in_place(plus, 2)
     xor = bitwise.bitwise_xor_circuit(4)
 
     circuit.connect_circuits(plus, xor, {0: 0, 1: 1, 2: 2, 3: 3})

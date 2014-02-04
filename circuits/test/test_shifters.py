@@ -25,7 +25,7 @@ class TestLeftRotate(unittest.TestCase):
                     shifted = list(shifted)
 
                     # Also make sure it's in place
-                    self.assertIs(c, shifters.left_rotate(c, shift))
+                    self.assertIs(c, shifters.left_rotate_in_place(c, shift))
                     self.assertEqual(shifted, c.evaluate())
 
 
