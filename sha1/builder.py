@@ -1,12 +1,33 @@
 from itertools import izip
 
 from circuits.bitwise import bitwise_or_circuit, bitwise_and_circuit, bitwise_not_circuit, bitwise_xor_circuit
-from circuits.circuit import connect_circuits
+from circuits.circuit import connect_circuits, stack_circuits
 from circuits.sources import digital_source_int_circuit
 from circuits.adders import ripple_adder_no_carry
 from circuits.shifters import left_rotate
 
-__author__ = 'jacky'
+
+def sha1(message):
+    """
+    Runs the sha-1 block operation on a 512-bit message/chunk.
+    """
+    # Initial constants
+    a = digital_source_int_circuit(0x67452301, 32)
+    b = digital_source_int_circuit(0xEFCDAB89, 32)
+    c = digital_source_int_circuit(0x98BADCFE, 32)
+    d = digital_source_int_circuit(0x10325476, 32)
+    e = digital_source_int_circuit(0xC3D2E1F0, 32)
+
+    h0, h1, h2, h3, h4 = block_operation(message, a, b, c, d, e)
+
+    # Concatenate results
+    h01 = stack_circuits('h01', h0, h1)
+    h012 = stack_circuits('h012', h01, h2)
+    h0123 = stack_circuits('h0123', h012, h3)
+    h = stack_circuits('H', h0123, h4)
+
+    result = int(''.join(map(str, h.evaluate())), 2)
+    return result
 
 
 def block_operation(chunk, h0, h1, h2, h3, h4):
@@ -113,7 +134,7 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
         e = d
         d = c
-        c = left_rotate(b, 30)  # TODO: this line ends up changing h0 and h1 !!!
+        c = left_rotate(b, 30)
         b = a
         a = temp
 

@@ -1,5 +1,6 @@
 import unittest
 import sys
+import random
 
 from sha1.builder import *
 
@@ -62,6 +63,12 @@ def sha1_block(chunk):
     return eh0, eh1, eh2, eh3, eh4
 
 
+def sha1_algorithm(message):
+    h0, h1, h2, h3, h4 = sha1_block(message)
+
+    return (h0 << 128) | (h1 << 96) | (h2 << 64) | (h3 << 32) | h4
+
+
 class TestBlockOperation(unittest.TestCase):
     def test_function(self):
         sys.setrecursionlimit(10000)
@@ -84,16 +91,18 @@ class TestBlockOperation(unittest.TestCase):
             return int(''.join(map(str, eval)), 2)
 
         nh = map(eval_to_int, result)
-        eh = sha1_block(chunk)
+        eh = map(long, sha1_block(chunk))
+
+        self.assertEqual(eh, nh)
 
         #Now run the same algorithm without circuits
-        print 'Actual from circuit:'
-        for h in nh:
-            print '%x' % h
-
-        print 'Hash result from code:'
-        for h in eh:
-            print '%x' % h
+        # print 'Actual from circuit:'
+        # for h in nh:
+        #     print '%x' % h
+        #
+        # print 'Hash result from code:'
+        # for h in eh:
+        #     print '%x' % h
 
 
 class TestCreateWords(unittest.TestCase):
@@ -113,3 +122,16 @@ class TestCreateWords(unittest.TestCase):
         exp_words = chunk_words(chunk)
 
         self.assertEqual(exp_words, res_words)
+
+
+class TestAlgorithm(unittest.TestCase):
+    def test_function(self):
+        sys.setrecursionlimit(10000)
+
+        chunk = random.getrandbits(512)
+        chunk_circuit = digital_source_int_circuit(chunk, 512)
+
+        expected = sha1_algorithm(chunk)
+        result = sha1(chunk_circuit)
+
+        self.assertEqual(expected, result)
