@@ -189,3 +189,17 @@ class ComponentBase(object):
             if c == component:
                 # 'Disconnect' input bit
                 self._input_bits[i] = None
+
+    def __hash__(self):
+        """
+        For hash(circuit_a) == hash(circuit_b), all inputs have to be
+        the same (i.e. identical gates and bit indices), all circuits
+        connected to are the same, and names are the same
+        """
+        return id(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return id(self) == id(other)
