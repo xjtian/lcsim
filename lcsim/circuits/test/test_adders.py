@@ -1,10 +1,9 @@
+from lcsim.circuits import circuit, sources, adders
+
 __author__ = 'Jacky'
 
 import unittest
 import itertools
-
-from circuits import circuit, adders
-from components import sources
 
 
 class TestFullAdder(unittest.TestCase):
@@ -13,9 +12,7 @@ class TestFullAdder(unittest.TestCase):
         it = itertools.product([0, 1], [0, 1], [0, 1])
 
         for x in it:
-            s = sources.DigitalArbitrary(x)
-            src = circuit.Circuit('src', 0, 3)
-            src.add_output_component(s, {0: 0, 1: 1, 2: 2})
+            src = sources.digital_source_circuit(x)
 
             a = adders.full_adder_circuit()
             circuit.connect_circuits(src, a, {0: 0, 1: 1, 2: 2})
@@ -39,9 +36,7 @@ class TestRippleAdderNoCarry(unittest.TestCase):
                     n2 = int(''.join(map(str, y)), 2)
                     mapping = {i: i for i in xrange(0, 2 * l)}
 
-                    s = sources.DigitalArbitrary(x + y)
-                    src = circuit.Circuit('src', 0, 2 * l)
-                    src.add_output_component(s, mapping)
+                    src = sources.digital_source_circuit(x + y)
 
                     a = adders.ripple_adder_no_carry(l)
                     circuit.connect_circuits(src, a, mapping)
@@ -62,9 +57,7 @@ class TestRippleAdderNoCarry(unittest.TestCase):
         while len(bl) < 32:
             bl.insert(0, 0)
 
-        s = sources.DigitalArbitrary(al + bl)
-        src = circuit.Circuit('src', 0, 64)
-        src.add_output_component(s, {i: i for i in xrange(0, 64)})
+        src = sources.digital_source_circuit(al + bl)
 
         adder = adders.ripple_adder_no_carry(32)
         circuit.connect_circuits(src, adder, {i: i for i in xrange(0, 64)})

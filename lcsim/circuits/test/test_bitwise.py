@@ -1,10 +1,9 @@
+from lcsim.circuits import bitwise, circuit, sources
+
 __author__ = 'Jacky'
 
 import unittest
 import itertools
-
-from circuits import bitwise, circuit
-from components import sources
 
 
 class TestBitwiseAnd(unittest.TestCase):
@@ -19,14 +18,11 @@ class TestBitwiseAnd(unittest.TestCase):
             for x in it1:
                 for y in it2:
                     c = bitwise.bitwise_and_circuit(l)
-                    s = sources.DigitalArbitrary(x + y)
 
                     n1 = int(''.join(map(str, x)), 2)
                     n2 = int(''.join(map(str, y)), 2)
 
-                    source_c = circuit.Circuit('src', 0, 2 * l)
-                    source_c.add_output_component(s, {i: i for i in
-                                                      xrange(0, 2 * l)})
+                    source_c = sources.digital_source_circuit(x + y)
                     circuit.connect_circuits(source_c, c,
                                              {i: i for i in xrange(0, 2 * l)})
 
@@ -46,14 +42,12 @@ class TestBitwiseOr(unittest.TestCase):
             for x in it1:
                 for y in it2:
                     c = bitwise.bitwise_or_circuit(l)
-                    s = sources.DigitalArbitrary(x + y)
 
                     n1 = int(''.join(map(str, x)), 2)
                     n2 = int(''.join(map(str, y)), 2)
 
-                    source_c = circuit.Circuit('src', 0, 2 * l)
-                    source_c.add_output_component(s, {i: i for i in
-                                                      xrange(0, 2 * l)})
+                    source_c = sources.digital_source_circuit(x + y)
+
                     circuit.connect_circuits(source_c, c,
                                              {i: i for i in xrange(0, 2 * l)})
 
@@ -73,14 +67,11 @@ class TestBitwiseXor(unittest.TestCase):
             for x in it1:
                 for y in it2:
                     c = bitwise.bitwise_xor_circuit(l)
-                    s = sources.DigitalArbitrary(x + y)
 
                     n1 = int(''.join(map(str, x)), 2)
                     n2 = int(''.join(map(str, y)), 2)
 
-                    source_c = circuit.Circuit('src', 0, 2 * l)
-                    source_c.add_output_component(s, {i: i for i in
-                                                      xrange(0, 2 * l)})
+                    source_c = sources.digital_source_circuit(x + y)
                     circuit.connect_circuits(source_c, c,
                                              {i: i for i in xrange(0, 2 * l)})
 
@@ -97,12 +88,10 @@ class TestBitwiseNot(unittest.TestCase):
 
             for x in it1:
                 c = bitwise.bitwise_not_circuit(l)
-                s = sources.DigitalArbitrary(x)
 
                 n = int(''.join(map(lambda y: '0' if y else '1', x)), 2)
 
-                source_c = circuit.Circuit('src', 0, l)
-                source_c.add_output_component(s, {i: i for i in xrange(0, l)})
+                source_c = sources.digital_source_circuit(x)
                 circuit.connect_circuits(source_c, c,
                                          {i: i for i in xrange(0, l)})
 

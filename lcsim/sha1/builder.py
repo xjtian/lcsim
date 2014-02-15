@@ -1,10 +1,10 @@
 from itertools import izip
 
-from circuits.bitwise import bitwise_or_circuit, bitwise_and_circuit, bitwise_not_circuit, bitwise_xor_circuit
-from circuits.circuit import connect_circuits, stack_circuits
-from circuits.sources import digital_source_int_circuit
-from circuits.adders import ripple_adder_no_carry
-from circuits.shifters import left_rotate
+from lcsim.circuits.bitwise import bitwise_or_circuit, bitwise_and_circuit, bitwise_not_circuit, bitwise_xor_circuit
+from lcsim.circuits.circuit import connect_circuits, stack_circuits
+from lcsim.circuits.sources import digital_source_int_circuit
+from lcsim.circuits.adders import ripple_adder_no_carry
+from lcsim.circuits.shifters import left_rotate
 
 
 def sha1(message):

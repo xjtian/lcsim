@@ -1,6 +1,6 @@
-__author__ = 'jacky'
+from lcsim.components import base
 
-from components import base
+__author__ = 'jacky'
 
 
 class LogicGateBase(base.ComponentBase):
@@ -9,8 +9,8 @@ class LogicGateBase(base.ComponentBase):
     ComponentBase class.
     """
 
-    def __init__(self, name, input_bits, output_bits):
-        super(LogicGateBase, self).__init__(name, input_bits, output_bits)
+    def __init__(self, name, input_bits):
+        super(LogicGateBase, self).__init__(name, input_bits)
 
     def evaluate(self):
         """
@@ -31,13 +31,13 @@ class ANDGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(ANDGate, self).__init__('AND', 2, 1)
+        super(ANDGate, self).__init__('AND', 2)
 
     def evaluate(self):
         super(ANDGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(inputs[0] and inputs[1])
+        self.output_bit = int(inputs[0] and inputs[1])
 
 
 class ORGate(LogicGateBase):
@@ -46,13 +46,13 @@ class ORGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(ORGate, self).__init__('OR', 2, 1)
+        super(ORGate, self).__init__('OR', 2)
 
     def evaluate(self):
         super(ORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(inputs[0] or inputs[1])
+        self.output_bit = int(inputs[0] or inputs[1])
 
 
 class XORGate(LogicGateBase):
@@ -61,13 +61,13 @@ class XORGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(XORGate, self).__init__('XOR', 2, 1)
+        super(XORGate, self).__init__('XOR', 2)
 
     def evaluate(self):
         super(XORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = inputs[0] ^ inputs[1]
+        self.output_bit = inputs[0] ^ inputs[1]
 
 
 class NOTGate(LogicGateBase):
@@ -76,13 +76,13 @@ class NOTGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(NOTGate, self).__init__('NOT', 1, 1)
+        super(NOTGate, self).__init__('NOT', 1)
 
     def evaluate(self):
         super(NOTGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(not inputs[0])
+        self.output_bit = int(not inputs[0])
 
 
 class NANDGate(LogicGateBase):
@@ -91,13 +91,13 @@ class NANDGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(NANDGate, self).__init__('NAND', 2, 1)
+        super(NANDGate, self).__init__('NAND', 2)
 
     def evaluate(self):
         super(NANDGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(not (inputs[0] and inputs[1]))
+        self.output_bit = int(not (inputs[0] and inputs[1]))
 
 
 class NORGate(LogicGateBase):
@@ -106,13 +106,13 @@ class NORGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(NORGate, self).__init__('NOR', 2, 1)
+        super(NORGate, self).__init__('NOR', 2)
 
     def evaluate(self):
         super(NORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(not (inputs[0] or inputs[1]))
+        self.output_bit = int(not (inputs[0] or inputs[1]))
 
 
 class XNORGate(LogicGateBase):
@@ -121,10 +121,10 @@ class XNORGate(LogicGateBase):
     """
 
     def __init__(self):
-        super(XNORGate, self).__init__('XNOR', 2, 1)
+        super(XNORGate, self).__init__('XNOR', 2)
 
     def evaluate(self):
         super(XNORGate, self).evaluate()
 
         inputs = self.evaluate_inputs()
-        self.output_bits[0] = int(not (inputs[0] ^ inputs[1]))
+        self.output_bit = int(not (inputs[0] ^ inputs[1]))

@@ -2,7 +2,7 @@ import unittest
 import sys
 import random
 
-from sha1.builder import *
+from lcsim.sha1.builder import *
 
 
 def chunk_words(chunk):

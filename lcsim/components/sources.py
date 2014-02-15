@@ -1,6 +1,6 @@
-__author__ = 'Jacky'
+from lcsim.components import base
 
-from components import base
+__author__ = 'Jacky'
 
 
 class DigitalSourceBase(base.ComponentBase):
@@ -12,16 +12,17 @@ class DigitalSourceBase(base.ComponentBase):
         """
         Initialize a new digital source component.
         """
-        if any([x != 0 and x != 1 for x in output]):
-            raise ValueError('Bits can only be 0 or 1. Invalid value.')
+        if output != 0 and output != 1:
+            raise ValueError('Bits can only be 0 or 1. Invalid value %d.' % output)
 
-        super(DigitalSourceBase, self).__init__(name, 0, len(output))
+        super(DigitalSourceBase, self).__init__(name, 0)
+
         # Keep a private version just in case output_bits is changed somehow.
         self.__exp_output = output
-        self.output_bits = output
+        self.output_bit = output
 
     def evaluate(self):
-        self.output_bits = self.__exp_output
+        self.output_bit = self.__exp_output
 
 
 class DigitalZero(DigitalSourceBase):
@@ -29,7 +30,7 @@ class DigitalZero(DigitalSourceBase):
     Digital source component that always outputs 0.
     """
     def __init__(self):
-        super(DigitalZero, self).__init__('D0', [0])
+        super(DigitalZero, self).__init__('D0', 0)
 
 
 class DigitalOne(DigitalSourceBase):
@@ -37,13 +38,4 @@ class DigitalOne(DigitalSourceBase):
     Digital source component that always outputs 1.
     """
     def __init__(self):
-        super(DigitalOne, self).__init__('D1', [1])
-
-
-class DigitalArbitrary(DigitalSourceBase):
-    """
-    Any arbitrary digital source that has no inputs and always outputs a set
-    number and arrangement of bits.
-    """
-    def __init__(self, output):
-        super(DigitalArbitrary, self).__init__('DArb', output)
+        super(DigitalOne, self).__init__('D1', 1)
