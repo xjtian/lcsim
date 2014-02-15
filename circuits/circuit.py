@@ -16,25 +16,12 @@ class InvalidCircuitException(Exception):
 class Circuit(object):
     """
     Base class for all circuits. Abstractly, a circuit is just a graph
-    consisting of circuit elements as nodes and the wires between them as
+    consisting of components (gates) as nodes and the wires between them as
     edges.
 
     Each available slot in the input space of the circuit maps directly to
     an available input slot for some gate, and each available output slot
     maps to an available output slot for some gate.
-
-    Example Usage:
-        >>> from components import gates, sources
-        >>> a = gates.ANDGate()
-        >>> b = gates.ORGate()
-        >>> s = sources.DigitalArbitrary([0, 0, 1, 0])
-        >>> a.add_input(s, {0: 0, 1: 1})
-        >>> b.add_input(s, {2: 0, 3: 1})
-        >>> c = Circuit('test', 0, 2)
-        >>> c.add_output_component(a, {0: 0})
-        >>> c.add_output_component(b, {1: 0})
-        >>> c.evaluate()
-        [0, 1]
     """
     def __init__(self, name, input_size, output_size):
         """
@@ -54,13 +41,13 @@ class Circuit(object):
         self.name = name
 
         # Each index represents an input space, and contains a list of tuples
-        # (Component, int) representing which components on which specific
-        # input bits are connected to this input space.
+        # (ComponentBase, int) representing the component and the input index of
+        # it that occupies this input space.
         self._inputs = [[] for _ in xrange(0, input_size)]
 
-        # Each index represents an output space, and contains a tuple
-        # (Component, int) with the Component and its output bit number that
-        #  corresponds to this output space.
+        # Each index represents an output space, and contains a reference to
+        # a ComponentBase that represents the component that outputs at this
+        # space.
         self._outputs = [None] * output_size
 
     def add_input_component(self, component, mapping):
@@ -79,53 +66,50 @@ class Circuit(object):
         Raises:
             ValueError if the input space of the circuit is already taken
             or any mapping values are out of range.
+
+        :type component ComponentBase
+        :type mapping dict
         """
-        self.__add_component_helper(component, mapping, True)
-
-    def add_output_component(self, component, mapping):
-        """
-        Set an output component for the circuit. Specify a mapping keyed by
-        the circuit output space to the component output bit.
-
-        Parameters:
-            component:
-                The component (inherit from ComponentBase) to add as an
-                output.
-            mapping:
-                int: int dictionary keyed by intended output space of this
-                circuit to the output bit number of the component.
-
-        Raises:
-            ValueError if the output space of the circuit is already taken
-            or any mapping values are out of range.
-        """
-        self.__add_component_helper(component, mapping, False)
-
-    def __add_component_helper(self, component, mapping, yes_input):
         for k, v in mapping.iteritems():
             if k < 0:
                 raise ValueError('Invalid input space index %d.' % k)
             if v < 0:
                 raise ValueError('Invalid input component index %d' % v)
 
-            if yes_input:
-                if k >= len(self._inputs):
-                    raise ValueError('Invalid input space index %d.' % k)
-                if v >= len(component._input_bits):
-                    raise ValueError('Invalid component input index %d' % v)
-            else:
-                if k >= len(self._outputs):
-                    raise ValueError('Invalid output space index %d.' % k)
-                if self._outputs[k] is not None:
-                    raise ValueError('Circuit output space already taken.')
-                if v >= len(component.output_bits):
-                    raise ValueError('Invalid component output index %d' % v)
+            if k >= len(self._inputs):
+                raise ValueError('Invalid input space index %d.' % k)
+            if v >= len(component._input_bits):
+                raise ValueError('Invalid component input index %d' % v)
 
         for k, v in mapping.iteritems():
-            if yes_input:
-                self._inputs[k].append((component, v))
-            else:
-                self._outputs[k] = (component, v)
+            self._inputs[k].append((component, v))
+
+    def add_output_component(self, component, output_index):
+        """
+        Set an output component for the circuit. Output bit index of the
+        circuit is specified by the output_index parameter.
+
+        Parameters:
+            component:
+                The component (inherit from ComponentBase) to add as an
+                output.
+            output_index:
+                Output index of the circuit the given component is for.
+
+        Raises:
+            ValueError if the output space of the circuit is already taken
+            or out of range.
+
+        :type component ComponentBase
+        :type output_index int
+        """
+        if output_index < 0 or output_index >= len(self._outputs):
+            raise ValueError('Output index out of bounds: %d' % output_index)
+
+        if self._outputs[output_index] is not None:
+            raise ValueError('Circuit output space %d already taken.' % output_index)
+
+        self._outputs[output_index] = component
 
     def evaluate(self):
         """
@@ -148,7 +132,7 @@ class Circuit(object):
             InvalidCircuitException if there are any unspecified input or
             output spaces.
         """
-        if [] in self._inputs:
+        if None in self._inputs:
             raise InvalidCircuitException('Circuit inputs not fully '
                                           'specified')
         if None in self._outputs:
@@ -156,10 +140,9 @@ class Circuit(object):
                                           'specified')
 
         result = [-1] * len(self._outputs)
-        for i, tup in enumerate(self._outputs):
-            com, j = tup
-            com.evaluate()
-            result[i] = com.output_bits[j]
+        for i, gate in enumerate(self._outputs):
+            gate.evaluate()
+            result[i] = gate.output_bit
 
         return result
 
@@ -184,23 +167,9 @@ def connect_circuits(out_circuit, in_circuit, mapping):
         must be one-to-one and within the output/input range of both
         circuits).
 
-    Example usage:
-        >>> from components import gates, sources
-        >>> a = gates.ANDGate()
-        >>> b = gates.ORGate()
-        >>> s = sources.DigitalArbitrary([1, 1, 0, 0])
-        >>> c = gates.XORGate()
-        >>> c1 = Circuit('left', 0, 2)
-        >>> c2 = Circuit('right', 2, 1)
-        >>> a.add_input(s, {0: 0, 1: 1})
-        >>> b.add_input(s, {2: 0, 3: 1})
-        >>> c1.add_output_component(a, {0: 0})
-        >>> c1.add_output_component(b, {1: 0})
-        >>> c2.add_input_component(c, {0: 0, 1: 1})
-        >>> c2.add_output_component(c, {0: 0})
-        >>> connect_circuits(c1, c2, {0: 0, 1: 1})
-        >>> c2.evaluate()
-        [1]
+    :type out_circuit Circuit
+    :type in_circuit Circuit
+    :type mapping dict
     """
     for i in mapping.keys():
         if i >= len(out_circuit._outputs) or i < 0:
@@ -216,11 +185,11 @@ def connect_circuits(out_circuit, in_circuit, mapping):
         raise ValueError('Output circuit is incomplete.')
 
     for k, v in mapping.iteritems():
-        (com_out, i) = out_circuit._outputs[k]
+        com_out = out_circuit._outputs[k]
         in_list = in_circuit._inputs[v]
 
         for (com_in, j) in in_list:
-            com_in.add_input(com_out, {i: j})
+            com_in.add_input(com_out, j)
 
 
 def stack_circuits(name, c1, c2):
