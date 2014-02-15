@@ -37,7 +37,7 @@ def digital_source_circuit(output):
              output]
 
     for i, src in enumerate(comps):
-        result.add_output_component(src, {i: 0})
+        result.add_output_component(src, i)
 
     return result
 
@@ -83,7 +83,7 @@ def digital_source_int_circuit(number, bits):
 
     comps = [sources.DigitalOne() if x else sources.DigitalZero() for x in zeroes]
     for i, src in enumerate(comps):
-        result.add_output_component(src, {i: 0})
+        result.add_output_component(src, i)
 
     return result
 
