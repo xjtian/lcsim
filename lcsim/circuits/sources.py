@@ -1,9 +1,7 @@
+from lcsim.circuits import circuit
+from lcsim.components import sources
+
 __author__ = 'Jacky'
-
-from math import log
-
-from components import sources
-from circuits import circuit
 
 
 def digital_source_circuit(output):

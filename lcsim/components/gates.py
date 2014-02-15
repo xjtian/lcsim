@@ -1,6 +1,6 @@
-__author__ = 'jacky'
+from lcsim.components import base
 
-from components import base
+__author__ = 'jacky'
 
 
 class LogicGateBase(base.ComponentBase):

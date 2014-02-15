@@ -1,7 +1,7 @@
-__author__ = 'Jacky'
+from lcsim.circuits import circuit
+from lcsim.components import gates
 
-from circuits import circuit
-from components import gates
+__author__ = 'Jacky'
 
 
 def __full_adder_components():

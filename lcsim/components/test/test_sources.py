@@ -1,7 +1,8 @@
+from lcsim.components import sources
+
 __author__ = 'Jacky'
 
 import unittest
-from components import sources
 
 
 class TestDigitalSourceBase(unittest.TestCase):

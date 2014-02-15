@@ -1,9 +1,9 @@
+from lcsim.circuits import shifters, sources
+
 __author__ = 'Jacky'
 
 import unittest
 import itertools
-
-from circuits import shifters, sources
 
 
 class TestLeftRotate(unittest.TestCase):

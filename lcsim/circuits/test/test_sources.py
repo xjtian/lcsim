@@ -1,7 +1,7 @@
 __author__ = 'Jacky'
 
 import unittest
-from circuits import sources
+from lcsim.circuits import sources
 
 
 class TestDigitalSource(unittest.TestCase):

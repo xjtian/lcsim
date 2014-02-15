@@ -1,6 +1,6 @@
-__author__ = 'Jacky'
+from lcsim.components import base
 
-from components import base
+__author__ = 'Jacky'
 
 
 class ComponentMockZero(base.ComponentBase):

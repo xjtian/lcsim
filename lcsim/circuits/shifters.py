@@ -1,4 +1,4 @@
-from circuits.circuit import Circuit
+from lcsim.circuits.circuit import Circuit
 
 
 def left_rotate_in_place(circuit, shift):

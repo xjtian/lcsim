@@ -1,8 +1,9 @@
+from lcsim.circuits import circuit
+from lcsim.components import base
+
 __author__ = 'Jacky'
 
 import unittest
-from circuits import circuit
-from components import base
 
 
 class TestCircuit(unittest.TestCase):

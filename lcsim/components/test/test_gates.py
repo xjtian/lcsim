@@ -1,9 +1,9 @@
+from lcsim.components import base, gates
+from lcsim.components.test import mocks
+
 __author__ = 'jacky'
 
 import unittest
-from components import gates, base
-
-from components.test import mocks
 
 
 class TestLogicGateBase(unittest.TestCase):

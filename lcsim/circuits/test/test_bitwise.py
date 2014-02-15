@@ -1,9 +1,9 @@
+from lcsim.circuits import bitwise, circuit, sources
+
 __author__ = 'Jacky'
 
 import unittest
 import itertools
-
-from circuits import bitwise, circuit, sources
 
 
 class TestBitwiseAnd(unittest.TestCase):

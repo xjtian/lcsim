@@ -214,7 +214,7 @@ def stack_circuits(name, c1, c2):
         The resulting stacked circuit as a single circuit object.
 
     Example usage:
-        >>> from components import gates, sources
+        >>> from lcsim.components import gates, sources
         >>> a = gates.ANDGate()
         >>> b = gates.ORGate()
         >>> s = sources.DigitalArbitrary([1, 1, 0, 0])
@@ -263,7 +263,7 @@ def merge_circuits(name, c1, c2):
         The resulting merged circuit.
 
     Example usage:
-        >>> from components import gates, sources
+        >>> from lcsim.components import gates, sources
         >>> a = gates.NOTGate()
         >>> b = gates.XORGate()
         >>> s = sources.DigitalArbitrary([1, 1, 0])

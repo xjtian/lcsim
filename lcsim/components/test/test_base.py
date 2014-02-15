@@ -1,9 +1,9 @@
+from lcsim.components.test import mocks
+
 __author__ = 'jacky'
 
 import unittest
-from components.base import ComponentBase
-
-from components.test import mocks
+from lcsim.components.base import ComponentBase
 
 
 class TestComponentBase(unittest.TestCase):

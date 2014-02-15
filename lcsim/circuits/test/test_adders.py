@@ -1,9 +1,9 @@
+from lcsim.circuits import circuit, sources, adders
+
 __author__ = 'Jacky'
 
 import unittest
 import itertools
-
-from circuits import circuit, adders, sources
 
 
 class TestFullAdder(unittest.TestCase):
