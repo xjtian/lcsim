@@ -33,8 +33,8 @@ class ExampleGate(base.ComponentBase):
 Circuits
 --------
 
-A circuit is a network of connected gates that take an input of m bits and
-output n bits.
+A circuit is a network of connected gates that performs some operation on
+a sequence of input bits.
 
 Circuits are meant to be built modularly from less complex parts. As an
 example, consider the implementation of the SHA-1 block operation as a
