@@ -26,7 +26,7 @@ class ComponentBase(object):
     to be overridden.
     """
 
-    def __init__(self, name, input_bits, output_bits, *args, **kwargs):
+    def __init__(self, name, input_bits, *args, **kwargs):
         """
         Initialize a base circuit component with a name and specific number
         of input and output bits.
@@ -36,24 +36,25 @@ class ComponentBase(object):
                 Name of this component. Any arbitrary string will do.
             input_bits:
                 Number of input bits the component accepts.
-            output_bits:
-                Number of output bits the component returns.
+
+        :type name str
+        :type input_bits int
         """
         self.name = name
 
-        # Each index represents an input bit, and contains a tuple
-        # (Component, int). int is the number of the output bit that is
-        # wired to this input bit from the Component.
+        # Each element in the array represents an input bit, and is
+        # a reference to a ComponentBase object that connects to
+        # the input slot.
         self._input_bits = [None] * input_bits
 
-        # Each list index corresponds to an output bit.
-        self.output_bits = [-1] * output_bits
+        # Value of the output - None if unevaluated, otherwise 0 or 1
+        self.output_bit = None
 
         # Graph edges for representing circuits as graphs
-        self.parents = []
-        self.children = []
+        self.parents = set()
+        self.children = set()
 
-    def add_input(self, component, mapping):
+    def add_input(self, component, input_space):
         """
         Connect another component to this component by wiring output bits to
         input bits. The order of connection is specified by the
@@ -69,49 +70,31 @@ class ComponentBase(object):
         Parameters:
             component:
                 Output component to connect to this component's input spaces.
-            mapping:
-                int: int dictionary keyed by output component output bit
-                number to the input bit number fo this component to connect
-                it to.
+            input_space:
+                Index of the bit of this component to connect to.
 
         Raises:
-            ValueError if the mapping is invalid in some way: not one-to-one
-            or outside the range of addressable bits in input/output spaces.
+            ValueError if the input space is taken or out of bounds.
+
+        :type component ComponentBase
+        :type input_space int
         """
-        if len(mapping.values()) > len(self._input_bits):
-            raise ValueError(
-                'Connections must be one-to-one. Too many input values.'
-            )
+        if input_space < 0 or input_space >= len(self._input_bits):
+            raise ValueError('Invalid input bit index %d' % input_space)
 
-        for i in mapping.values():
-            if i >= len(self._input_bits) or i < 0:
-                raise ValueError(
-                    'Invalid input bit number %d: not addressable bit.' % i)
+        if self._input_bits[input_space] is not None:
+            raise ValueError('Input bit index %d is already taken' % input_space)
 
-            if self._input_bits[i] is not None:
-                raise ValueError(
-                    'Connections must be one-to-one. Input bit occupied')
+        self._input_bits[input_space] = component
 
-        for i in mapping.keys():
-            if i >= len(component.output_bits) or i < 0:
-                raise ValueError(
-                    'Invalid output bit number %d: not addressable bit.' % i)
-
-        for k, v in mapping.items():
-            # Create the mapping
-            self._input_bits[v] = (component, k)
-
-        if component not in self.parents:
-            self.parents.append(component)
-
-        if self not in component.children:
-            component.children.append(self)
+        self.parents.add(component)
+        component.children.add(self)
 
     def evaluate_inputs(self):
         """
-        Evaluates all input connections to this component and returns an
-        array of input bit values in order. This method should always be
-        called first before the body of logic in evaluate().
+        Evaluates all components connected to input slots of this component
+        and returns an array of input bit values in order. ***This method
+        should always be called BEFORE the body of logic in evaluate()***.
 
         Input values  are evaluated recursively, so the states of all parents
         and (grand)+parents of this component will be altered - namely,
@@ -126,12 +109,11 @@ class ComponentBase(object):
             input connections.
         """
         result = [0] * len(self._input_bits)
-        for j, tup in enumerate(self._input_bits):
-            component, i = tup
-            if component.output_bits[i] == -1:
-                component.evaluate()
+        for j, gate in enumerate(self._input_bits):
+            if gate.output_bit is None:
+                gate.evaluate()
 
-            result[j] = component.output_bits[i]
+            result[j] = gate.output_bit
 
         return result
 
@@ -143,8 +125,7 @@ class ComponentBase(object):
         evaluate_inputs().
 
         Note that the logic of this method is basically the only thing that
-        differentiates different types of gates, apart from input/output
-        space sizes.
+        differentiates different types of gates, apart from input space size.
         """
         pass
 
@@ -154,12 +135,10 @@ class ComponentBase(object):
         alter the state of the connected parent components as well by
         disconnecting their output bits.
         """
-        unique_components = set(
-            [input_tuple[0] for input_tuple in self._input_bits])
-        for component in unique_components:
+        for component in self.parents:
             component.children.remove(self)
-            self.parents.remove(component)
 
+        self.parents = set()
         self._input_bits = [None] * len(self._input_bits)
 
     def disconnect_outputs(self):
@@ -168,10 +147,8 @@ class ComponentBase(object):
         alter the state of the connected child components as well by
         disconnecting their corresponding input bits.
         """
-        for component in self.children:
+        for component in frozenset(self.children):
             component._remove_input(self)
-
-        self.children = []
 
     def _remove_input(self, component):
         """
@@ -184,10 +161,10 @@ class ComponentBase(object):
             return
 
         self.parents.remove(component)
-        for i, tup in enumerate(self._input_bits):
-            c, j = tup
-            if c == component:
-                # 'Disconnect' input bit
+        component.children.remove(self)
+
+        for i, gate in enumerate(self._input_bits):
+            if gate is component:
                 self._input_bits[i] = None
 
     def __hash__(self):

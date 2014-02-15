@@ -5,40 +5,26 @@ from components import base, multigates
 
 class ComponentMockZero(base.ComponentBase):
     """
-    Mock implementation of ComponentBase, all bits evaluate to 0.
+    Mock implementation of ComponentBase, always evaluates to 0.
     """
 
-    def __init__(self, name, input_bits, output_bits):
-        super(ComponentMockZero, self).__init__(name, input_bits, output_bits)
+    def __init__(self, name, input_bits):
+        super(ComponentMockZero, self).__init__(name, input_bits)
 
     def evaluate(self):
-        self.output_bits = [0] * len(self.output_bits)
+        self.output_bit = 0
 
 
 class ComponentMockOne(base.ComponentBase):
     """
-    Mock implementation of ComponentBase, all bits evaluate to 1.
+    Mock implementation of ComponentBase, always evaluates to 1.
     """
 
-    def __init__(self, name, input_bits, output_bits):
-        super(ComponentMockOne, self).__init__(name, input_bits, output_bits)
+    def __init__(self, name, input_bits):
+        super(ComponentMockOne, self).__init__(name, input_bits)
 
     def evaluate(self):
-        self.output_bits = [1] * len(self.output_bits)
-
-
-class SourceMock(base.ComponentBase):
-    """
-    Mock implementation of ComponentBase, bits evaluate to whatever
-    arbitrary list passed in constructor
-    """
-
-    def __init__(self, name, input_bits, output_list):
-        super(SourceMock, self).__init__(name, input_bits, len(output_list))
-        self.output_list = output_list
-
-    def evaluate(self):
-        self.output_bits = self.output_list
+        self.output_bit = 1
 
 
 class MultiGateAddInputMock(multigates.MultiGateBase):
