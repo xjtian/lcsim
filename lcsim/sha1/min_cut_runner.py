@@ -9,7 +9,7 @@ from lcsim.sha1 import builder
 from lcsim.components.base import ComponentBase
 
 
-def main():
+def main(rounds=80):
     sys.setrecursionlimit(100000)
 
     a = sources.digital_source_int_circuit(0x67452301, 32)
@@ -20,7 +20,7 @@ def main():
 
     message_circuit = sources.digital_source_int_circuit(random.getrandbits(512), 512)
 
-    h0, h1, h2, h3, h4 = builder.block_operation(message_circuit, a, b, c, d, e)
+    h0, h1, h2, h3, h4 = builder.block_operation(message_circuit, a, b, c, d, e, rounds)
 
     # Concatenate results
     h01 = circuit.stack_circuits('h01', h0, h1)
@@ -53,6 +53,8 @@ def main():
     for gate in h._outputs:
         g.add_edge(gate, 'sink', capacity=1)
 
+    print '\n'
+    print '---- Min-Cut on Reduced Rounds %d Rounds ----' % rounds
     print 'Number of nodes in circuit graph: %d' % len(g.nodes())
     print 'Number of edges in circuit graph: %d' % len(g.edges())
     print 'Total number of instantiated components: %d' % ComponentBase.count
@@ -63,4 +65,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    for i in xrange(0, 80):
+        main(rounds=i)
+
+        ComponentBase.count = 0
