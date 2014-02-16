@@ -132,6 +132,6 @@ class TestAlgorithm(unittest.TestCase):
         chunk_circuit = digital_source_int_circuit(chunk, 512)
 
         expected = sha1_algorithm(chunk)
-        result = sha1(chunk_circuit)
+        result, = sha1(chunk_circuit)
 
         self.assertEqual(expected, result)

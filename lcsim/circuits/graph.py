@@ -3,8 +3,10 @@ from collections import deque
 import networkx as nx
 
 
-def to_graph(circuit, weighted=True):
+def to_graph(inputs, weighted=True):
     """
+    TODO: update this docstring
+
     Run a BFS on a given circuit and return a networkx graph of the
     graph representation of the circuit with gates as nodes and connections
     between gates as edges.
@@ -19,16 +21,13 @@ def to_graph(circuit, weighted=True):
     Returns:
         A networkx graph of the circuit.
 
-    :type circuit Circuit
+    :type circuit list[ComponentBase]
     :rtype networkx.Graph
     """
     result = nx.Graph()
     visited_gates = set()
 
-    temp = set()
-    for input_list in circuit._inputs:
-        for (gate, _) in input_list:
-            temp.add(gate)
+    temp = set(inputs)
 
     q = deque(temp)
 
@@ -57,11 +56,6 @@ def to_graph(circuit, weighted=True):
     #--------------------
     #--------------------
     # Now add all edges
-
-    temp = set()
-    for input_list in circuit._inputs:
-        for (gate, _) in input_list:
-            temp.add(gate)
 
     q = deque(temp)
     visited_gates = set()
