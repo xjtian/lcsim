@@ -65,7 +65,7 @@ def main(rounds=80):
 
 
 if __name__ == '__main__':
-    for i in xrange(0, 80):
+    for i in xrange(0, 81):
         main(rounds=i)
 
         ComponentBase.count = 0
