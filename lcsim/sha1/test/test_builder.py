@@ -5,29 +5,29 @@ import random
 from lcsim.sha1.builder import *
 
 
-def chunk_words(chunk):
-    w = [-1] * 80
-    for i in xrange(0, 16):
+def chunk_words(chunk, rounds=80):
+    w = [-1] * rounds
+    for i in xrange(0, min(16, rounds)):
         w[i] = (chunk >> 32 * (15 - i)) & 0xFFFFFFFF
-    for i in xrange(16, 80):
+    for i in xrange(16, min(80, rounds)):
         w[i] = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]
         w[i] = ((w[i] << 1) % (1 << 32) | (w[i] >> 31))
 
     return w
 
 
-def sha1_block(chunk):
+def sha1_block(chunk, rounds=80):
     h0 = 0x67452301
     h1 = 0xEFCDAB89
     h2 = 0x98BADCFE
     h3 = 0x10325476
     h4 = 0xC3D2E1F0
 
-    w = chunk_words(chunk)
+    w = chunk_words(chunk, rounds)
 
     a, b, c, d, e = h0, h1, h2, h3, h4
     f, k = None, None
-    for i in xrange(0, 80):
+    for i in xrange(0, rounds):
         if 0 <= i <= 19:
             f = (b & c) | ((~b) & d)
             k = 0x5A827999
@@ -63,8 +63,8 @@ def sha1_block(chunk):
     return eh0, eh1, eh2, eh3, eh4
 
 
-def sha1_algorithm(message):
-    h0, h1, h2, h3, h4 = sha1_block(message)
+def sha1_algorithm(message, rounds=80):
+    h0, h1, h2, h3, h4 = sha1_block(message, rounds)
 
     return (h0 << 128) | (h1 << 96) | (h2 << 64) | (h3 << 32) | h4
 
@@ -123,6 +123,30 @@ class TestCreateWords(unittest.TestCase):
 
         self.assertEqual(exp_words, res_words)
 
+    def test_reduced_rounds(self):
+        chunk = 0x25afbbc1415e115f68b57be44bd10a75f90d7bec20c24bfce34a1a34409b7f9373496da68e4db94e9bc60f07a9d435fe40a8c4cf41b11d5fcc09d11878d653cb
+        chunk_circuit = digital_source_int_circuit(chunk, 512)
+
+        w_circs = create_words(chunk_circuit, rounds=0)
+        self.assertEqual([], w_circs)
+
+        w_circs = create_words(chunk_circuit, rounds=1)
+        self.assertEqual(1, len(w_circs))
+        self.assertIs(chunk_circuit, w_circs[0][0])
+
+        def eval_to_int(circ):
+            eval = circ[0].evaluate()[circ[1][0]:circ[1][-1] + 1]
+            self.assertEqual(32, len(circ[1]))
+
+            return int(''.join(map(str, eval)), 2)
+
+        w_circs = create_words(chunk_circuit, rounds=53)
+
+        res_words = map(eval_to_int, w_circs)
+        exp_words = chunk_words(chunk, rounds=53)
+
+        self.assertEqual(exp_words, res_words)
+
 
 class TestAlgorithm(unittest.TestCase):
     def test_function(self):
@@ -133,5 +157,19 @@ class TestAlgorithm(unittest.TestCase):
 
         expected = sha1_algorithm(chunk)
         result = sha1(chunk_circuit)[0]
+
+        self.assertEqual(expected, result)
+
+    def test_reduced_rounds(self):
+        sys.setrecursionlimit(10000)
+
+        chunk = random.getrandbits(512)
+        chunk_circuit = digital_source_int_circuit(chunk, 512)
+
+        r = random.randint(0, 80)
+        print 'Testing reduced rounds SHA-1 with %d rounds...' % r
+
+        expected = sha1_algorithm(chunk, rounds=r)
+        result = sha1(chunk_circuit, rounds=r)[0]
 
         self.assertEqual(expected, result)

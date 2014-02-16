@@ -7,7 +7,7 @@ from lcsim.circuits.adders import ripple_adder_no_carry
 from lcsim.circuits.shifters import left_rotate
 
 
-def sha1(message):
+def sha1(message, rounds=80):
     """
     Runs the sha-1 block operation on a 512-bit message/chunk.
     """
@@ -18,7 +18,7 @@ def sha1(message):
     d = digital_source_int_circuit(0x10325476, 32)
     e = digital_source_int_circuit(0xC3D2E1F0, 32)
 
-    h0, h1, h2, h3, h4 = block_operation(message, a, b, c, d, e)
+    h0, h1, h2, h3, h4 = block_operation(message, a, b, c, d, e, rounds)
 
     # Concatenate results
     h01 = stack_circuits('h01', h0, h1)
@@ -30,7 +30,7 @@ def sha1(message):
     return result, h
 
 
-def block_operation(chunk, h0, h1, h2, h3, h4):
+def block_operation(chunk, h0, h1, h2, h3, h4, rounds=80):
     """
     Returns (h0, h1, h2, h3, h4), the h-constants that result from running
     the SHA-1 algorithm on one block.
@@ -38,10 +38,10 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
 
     a, b, c, d, e = h0, h1, h2, h3, h4
 
-    w = create_words(chunk)
+    w = create_words(chunk, rounds)
 
     # Main loop here
-    for i in xrange(0, 80):
+    for i in xrange(0, rounds):
         if 0 <= i <= 19:
             # f = (b and c) or ((not b) and d)
             b_and_c = bitwise_and_circuit(32)
@@ -161,13 +161,13 @@ def block_operation(chunk, h0, h1, h2, h3, h4):
     return h0_add, h1_add, h2_add, h3_add, h4_add
 
 
-def create_words(chunk):
-    w = [None] * 80
+def create_words(chunk, rounds=80):
+    w = [None] * rounds
 
-    for i in xrange(0, 16):
+    for i in xrange(0, min(rounds, 16)):
         w[i] = (chunk, xrange(i * 32, i * 32 + 32))
 
-    for i in xrange(16, 80):
+    for i in xrange(16, min(rounds, 80)):
         # w[i] = (w[i-3] xor w[i-8] xor w[i-14] xor w[i-16]) leftrotate 1
         xtemp = bitwise_xor_circuit(32)
 
