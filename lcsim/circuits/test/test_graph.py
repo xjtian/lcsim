@@ -37,11 +37,11 @@ class TestToGraph(unittest.TestCase):
 
         g.add_node('source')
         for gate in message_circuit._outputs:
-            g.add_edge('source', gate)
+            g.add_edge('source', gate, capacity=1)
 
         g.add_node('sink')
         for gate in h._outputs:
-            g.add_edge(gate, 'sink')
+            g.add_edge(gate, 'sink', capacity=1)
 
         print 'Number of nodes in circuit graph: %d' % len(g.nodes())
         print 'Number of edges in circuit graph: %d' % len(g.edges())
