@@ -25,54 +25,40 @@ def to_graph(inputs, weighted=True):
     :rtype networkx.Graph
     """
     result = nx.Graph()
-    visited_gates = set()
-
-    temp = set(inputs)
-
-    q = deque(temp)
-
-    def bfs(to_visit):
-        """
-        Given an iterable of gates to visit, add them all to the graph as
-        nodes.
-
-        Returns a deque of all of the children of the given gates
-        """
-        neighbors = deque()
-        while len(to_visit) > 0:
-            gate = to_visit.popleft()
-
-            visited_gates.add(gate)
-            result.add_node(gate)
-
-            neighbors.extend(gate.children)
-
-        return neighbors
-
-    # This adds all gates as nodes
-    while len(q) > 0:
-        q = bfs(q)
-
-    #--------------------
-    #--------------------
-    # Now add all edges
-
-    q = deque(temp)
-    visited_gates = set()
+    # processed contains all gates that have been added to the graph as a
+    # node AND is connected to all neighbors in the graph
+    processed = set()
+    q = deque(set(inputs))
 
     while len(q) > 0:
         gate = q.popleft()
-        if gate in visited_gates:
-            continue
+        if gate not in result:
+            result.add_node(gate)
 
-        visited_gates.add(gate)
         for child in gate.children:
+            if child not in result:
+                result.add_node(child)
+
+            if child not in processed:
+                q.append(child)
+
             if weighted:
                 result.add_edge(gate, child, capacity=1)
             else:
                 result.add_edge(gate, child)
 
-            if child not in visited_gates:
-                q.append(child)
+        for parent in gate.parents:
+            if parent not in result:
+                result.add_node(parent)
+
+            if parent not in processed:
+                q.append(parent)
+
+            if weighted:
+                result.add_edge(parent, gate, capacity=1)
+            else:
+                result.add_edge(parent, gate)
+
+        processed.add(gate)
 
     return result
