@@ -27,7 +27,7 @@ def sha1(message):
     h = stack_circuits('H', h0123, h4)
 
     result = int(''.join(map(str, h.evaluate())), 2)
-    return result
+    return result, h
 
 
 def block_operation(chunk, h0, h1, h2, h3, h4):

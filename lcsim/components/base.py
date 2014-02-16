@@ -26,6 +26,8 @@ class ComponentBase(object):
     to be overridden.
     """
 
+    count = 0
+
     def __init__(self, name, input_bits, *args, **kwargs):
         """
         Initialize a base circuit component with a name and specific number
@@ -53,6 +55,8 @@ class ComponentBase(object):
         # Graph edges for representing circuits as graphs
         self.parents = set()
         self.children = set()
+
+        ComponentBase.count += 1
 
     def add_input(self, component, input_space):
         """
